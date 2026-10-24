@@ -1,5 +1,6 @@
 // LT32 PRO v.04-082025, manual fornecido pelo autor: páginas 8–10.
 // Os pontos do veículo são fictícios. A proibição do painel é uma regra do jogo.
+import {shuffleOptions} from './option-order.mjs?v=1.1.1';
 export const LT32_VERSION=2;
 export const LEADS=Object.freeze([
  {id:'positive',name:'Vermelho',color:'#ef6658',function:'Positivo da bateria',role:'positive',detail:'Alimentação de 9–90 VCC. Aqui: +12 V permanente com fusível de 2 A.'},
@@ -30,6 +31,11 @@ export const ROLE_INFO={
 };
 export function random(seed){let value=seed>>>0;return()=>{value=(Math.imul(1664525,value)+1013904223)>>>0;return value/4294967296;};}
 export function hashCase(value){let n=2166136261;for(const c of String(value)){n^=c.charCodeAt(0);n=Math.imul(n,16777619);}return n>>>0;}
+export const locationsFor=state=>shuffleOptions(LOCATIONS,state.seed??hashCase(state.caseId),'lt32.locations').map((place,i)=>({...place,label:String.fromCharCode(65+i)}));
+export function installationLayout(state){
+ const seed=state.seed??hashCase(state.caseId);
+ return {origins:shuffleOptions(Object.keys(ROLE_INFO),seed,'lt32.origins'),wires:shuffleOptions(state.wires||[],seed,'lt32.ends'),leads:shuffleOptions(LEADS,seed,'lt32.leads'),locations:locationsFor(state),parts:shuffleOptions(['trim','hood','door','trunk'],seed,'lt32.parts')};
+}
 function shuffled(values,rng){const a=[...values];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 export function makeWires(seed,count=12){const rng=random(seed),roles=shuffled(Object.keys(ROLE_INFO).slice(0,count),rng),colors=shuffled(['#8fa7b1','#df8867','#e6c781','#79ac98','#b690b0','#d5d7c4','#71a5b3','#c5b981','#bc8a94','#94b366','#bb9d6b','#829ac7'].slice(0,count),rng);return roles.map((role,i)=>({id:'wire-'+i,letter:String.fromCharCode(65+i),role,color:colors[i],bend:Math.round(rng()*210)-105,root:Math.floor(rng()*roles.length)}));}
 export function inspectWire(state,id){const wire=state.wires.find(w=>w.id===id);return wire?{...wire,...ROLE_INFO[wire.role]}:null;}

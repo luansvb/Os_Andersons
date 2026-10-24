@@ -1,7 +1,7 @@
-import {difficultyFor,installationEffects} from './career-core.mjs?v=1.1.0';
-import {challengeFor,CHECK_STEPS} from './activation-checks.mjs?v=1.1.0';
+import {difficultyFor,installationEffects} from './career-core.mjs?v=1.1.1';
+import {challengeFor,CHECK_STEPS} from './activation-checks.mjs?v=1.1.1';
 export {challengeFor,CHECK_STEPS};
-import {hashCase,random} from './lt32-core.mjs?v=1.1.0';
+import {hashCase,random} from './lt32-core.mjs?v=1.1.1';
 export const ACTIVATION_VERSION=2;
 export const POSITION_DELAY=18000;
 export const ACTIVATION_STEPS=Object.freeze([

@@ -1,4 +1,4 @@
-export const RELEASE='1.1.0';
+export const RELEASE='1.1.1';
 export const CAST=Object.freeze([
  {name:'CAT',role:'CHEFE DO SETOR',image:'cat.jpeg',quote:'NÃO FOI DEMITIDO. JÁ É UM EXCELENTE COMEÇO.'},
  {name:'BEAR',role:'SUPERVISOR DA ATIVAÇÃO',image:'bear-careca.png',quote:'RÁPIDO. EFICIENTE. EMPREGADO. GOSTEI, ANDERSON!'},
