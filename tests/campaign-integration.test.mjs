@@ -1,3 +1,4 @@
+import * as ordering from '../dist/option-order.mjs';
 import {installShift} from './ui-shift-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,9 +8,22 @@ import * as core from '../dist/core.mjs';
 import {makeClient} from '../dist/career-core.mjs';
 const html=await readFile(new URL('../dist/index.html',import.meta.url),'utf8');
 const script=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'');
-const appPreamble='const {INTRO,FIELDS,SAVE_VERSION,validateField,nearestIds,saoPauloDate,addDays,isCorrectBooking,routePosition}=window.testCore;const {createJourney,restoreJourney,mergeMetrics,difficultyFor,makeClient,installationSummary}=window.testCareer;const {ShiftSession,portrait,difficultyMarkup,recordsMarkup,rememberReport}=window.testShift;\n';
+const appPreamble='const {shuffleOptions,choiceOptions}=window.testOrdering;const {INTRO,FIELDS,SAVE_VERSION,validateField,nearestIds,saoPauloDate,addDays,isCorrectBooking,routePosition}=window.testCore;const {createJourney,restoreJourney,mergeMetrics,difficultyFor,makeClient,installationSummary}=window.testCareer;const {ShiftSession,portrait,difficultyMarkup,recordsMarkup,rememberReport}=window.testShift;\n';
 const checkpoint={version:1,phase:'success',completed:true,baseDate:'2026-10-23',messages:[],tech:2,form:{name:'Anderson da Silva Anderson',vehicle:'Ford Ka',availability:'Para amanhã, meio dia.'}};
-function fixture(t,saved=checkpoint,difficulty='probation'){const dom=new JSDOM(html,{url:'https://game.test/',runScripts:'outside-only',pretendToBeVisual:true});t.after(()=>dom.window.close());dom.window.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});dom.window.scrollTo=()=>{};dom.window.testCore=core;installShift(dom.window);dom.window.localStorage.setItem('andersons-prefs-v1',JSON.stringify({difficulty,sound:true}));dom.window.localStorage.setItem('andersons-save-v1',JSON.stringify(saved));dom.window.eval(appPreamble+script);return dom;}
+function fixture(t,saved=checkpoint,difficulty='probation'){const dom=new JSDOM(html,{url:'https://game.test/',runScripts:'outside-only',pretendToBeVisual:true});t.after(()=>dom.window.close());dom.window.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});dom.window.scrollTo=()=>{};dom.window.testCore=core;dom.window.testOrdering=ordering;installShift(dom.window);dom.window.localStorage.setItem('andersons-prefs-v1',JSON.stringify({difficulty,sound:true}));dom.window.localStorage.setItem('andersons-save-v1',JSON.stringify(saved));dom.window.eval(appPreamble+script);return dom;}
+test('Atalhos numéricos seguem a ordem visível embaralhada e o atendimento aceita a identidade da resposta',t=>{
+ const positions=new Set();
+ for(let i=0;i<8;i++){
+  const saved={...checkpoint,caseId:'keyboard-'+i,completed:false,phase:'intro',introStep:0,introReady:true,introPrompted:true,awaiting:null},dom=fixture(t,saved,'normal'),w=dom.window,d=w.document;
+  d.querySelector('[data-action="continue"]').click();
+  const buttons=[...d.querySelectorAll('[data-action="intro-choice"]')],correct=buttons.find(b=>b.dataset.index==='0');positions.add(buttons.indexOf(correct));
+  assert.deepEqual(buttons.map(b=>b.querySelector('.choice-number').textContent),['1','2','3','4','5']);
+  const before=buttons.map(b=>b.textContent);d.querySelector('[data-action="sound"]').click();assert.deepEqual([...d.querySelectorAll('[data-action="intro-choice"]')].map(b=>b.textContent),before);
+  d.body.dispatchEvent(new w.KeyboardEvent('keydown',{key:String(buttons.indexOf(correct)+1),bubbles:true}));
+  const result=JSON.parse(w.localStorage.getItem('andersons-save-v1'));assert.equal(result.awaiting,'intro-1');assert.equal(result.messages.at(-1).text,core.INTRO[0].options[0]);
+ }
+ assert.ok(positions.size>1);
+});
 test('Save concluído da versão anterior continua diretamente no Ato 2',t=>{
  const dom=fixture(t),d=dom.window.document;const continueButton=d.querySelector('[data-action="continue"]');assert.match(continueButton.textContent,/Continuar para a instalação/);continueButton.click();
  const frame=d.querySelector('#workshop-frame');assert.ok(frame);assert.match(frame.src,/lt32\.html\?mode=campaign/);const saved=JSON.parse(dom.window.localStorage.getItem('andersons-save-v1'));assert.equal(saved.phase,'workshop');assert.equal(saved.form.vehicle,'Ford Ka');assert.equal(saved.form.name,checkpoint.form.name);assert.ok(saved.caseId);

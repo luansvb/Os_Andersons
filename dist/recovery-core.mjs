@@ -1,8 +1,8 @@
-import {recoveryRules,difficultyFor} from './career-core.mjs?v=1.1.0';
+import {recoveryRules,difficultyFor} from './career-core.mjs?v=1.1.1';
 export const rulesFor=s=>s?.rules||RULES;
-import {moveScreenCar} from './screen-driving.mjs?v=1.1.0';
-import {WORLD,collides,locationName} from './heist-core.mjs?v=1.1.0';
-import {RO_LECTURE} from './ro-lecture.mjs?v=1.1.0';
+import {moveScreenCar} from './screen-driving.mjs?v=1.1.1';
+import {WORLD,collides,locationName} from './heist-core.mjs?v=1.1.1';
+import {RO_LECTURE} from './ro-lecture.mjs?v=1.1.1';
 export {RO_LECTURE};
 export const RECOVERY_VERSION=1;
 export const ANSWERS=['E quem disse que isso é problema nosso?','Como ocorreu, senhor?','Quem com ferro fere, com ferro será ferido.','Como você deixou isso acontecer, senhor?','Você procurou bem?'];
