@@ -1,8 +1,10 @@
+import {faultFor} from '../dist/activation-diagnosis.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createActivation,applyActivationAction as action,advanceActivation as advance,buttonsFor,taskFor,ACTIVATION_STEPS,ACCESS_STEPS,challengeFor,POSITION_DELAY,PRESSURE_INTERVAL,PRESSURE,BEAR_LINES,locationText,credentialsText,restoreActivation} from '../dist/activation-core.mjs';
 import {vehiclePoint} from '../dist/activation-visuals.mjs';
-const fresh=()=>createActivation('activation-case',{client:'Anderson da Silva Anderson',vehicle:'Ford Ka',installationLocation:'rear-trim'});
+const healthyCase=Array.from({length:20},(_,i)=>'activation-healthy-'+i).find(id=>faultFor(id)==='none');
+const fresh=()=>createActivation(healthyCase,{client:'Anderson da Silva Anderson',vehicle:'Ford Ka',installationLocation:'rear-trim'});
 function maze(){const s=fresh();return action(s,{type:'imei',value:s.imei});}
 function platform(){let s=maze();for(let i=0;i<20;i++){const check=challengeFor(s);if(check&&!check.solved)s=action(s,{type:'solve-check',id:check.correct});s=action(s,{type:'workflow',id:taskFor(s).id});}return s;}
 function positioned(){return advance(action(platform(),{type:'command',id:'position'}),POSITION_DELAY);}
@@ -27,7 +29,7 @@ test('Seis telas de acesso e envio de login/senha ao cliente precedem a conclus�
  let s=handoff();assert.equal(ACCESS_STEPS.length,6);for(let i=0;i<6;i++){const task=taskFor(s),wrong=buttonsFor(s).find(b=>b.id!==task.id);assert.equal(action(s,{type:'workflow',id:wrong.id}).phase,'failed');s=action(s,{type:'workflow',id:task.id});}assert.equal(s.phase,'credentials');s=action(s,{type:'copy-credentials'});assert.equal(action(s,{type:'send',target:'tech',value:credentialsText(s)}).phase,'failed');assert.equal(action(s,{type:'send',target:'client',value:credentialsText(s).slice(0,-1)}).phase,'failed');s=action(s,{type:'send',target:'client',value:credentialsText(s)});assert.equal(s.phase,'finish');assert.equal(s.accessSent,true);
 });
 test('Retomada conserva espera, sequência, texto e destinatário; rejeita outro caso e conclusão incompleta',()=>{
- let s=advance(action(platform(),{type:'command',id:'position'}),7000);let resumed=restoreActivation(JSON.parse(JSON.stringify(s)),'activation-case');assert.equal(resumed.waitMs,7000);assert.equal(advance(resumed,11000).phase,'location');assert.equal(restoreActivation(s,'other'),null);assert.equal(restoreActivation({...s,phase:'finish'},'activation-case'),null);s=action(credentials(),{type:'copy-credentials'});s=action(s,{type:'chat-target',id:'client'});s=action(s,{type:'paste'});resumed=restoreActivation(s,'activation-case');assert.equal(resumed.chatTarget,'client');assert.equal(resumed.chatDraft,credentialsText(resumed));assert.equal(resumed.clipboard.kind,'credentials');
+ let s=advance(action(platform(),{type:'command',id:'position'}),7000);let resumed=restoreActivation(JSON.parse(JSON.stringify(s)),healthyCase);assert.equal(resumed.waitMs,7000);assert.equal(advance(resumed,11000).phase,'location');assert.equal(restoreActivation(s,'other'),null);assert.equal(restoreActivation({...s,phase:'finish'},healthyCase),null);s=action(credentials(),{type:'copy-credentials'});s=action(s,{type:'chat-target',id:'client'});s=action(s,{type:'paste'});resumed=restoreActivation(s,healthyCase);assert.equal(resumed.chatTarget,'client');assert.equal(resumed.chatDraft,credentialsText(resumed));assert.equal(resumed.clipboard.kind,'credentials');
 });
 test('Veículo percorre a rota automaticamente e faz um ciclo completo',()=>{
  assert.notDeepEqual(vehiclePoint(0),vehiclePoint(8000));assert.deepEqual(vehiclePoint(0),vehiclePoint(60000));const s=action(action(credentials(),{type:'copy-credentials'}),{type:'send',target:'client',value:credentialsText(credentials())});assert.equal(advance(s,4000).finishMs,4000);assert.equal(advance(s,4000).elapsedMs,s.elapsedMs);

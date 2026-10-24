@@ -1,8 +1,9 @@
-import {difficultyFor,installationEffects} from './career-core.mjs?v=1.1.2';
-import {challengeFor,CHECK_STEPS} from './activation-checks.mjs?v=1.1.2';
+import {createDiagnosis,restoreDiagnosis,diagnosisFault,diagnosticFor,enterDiagnosis,DIAGNOSIS_SOURCES,DIAGNOSIS_ACTIONS,DIAGNOSIS_REVIEW_MS,DIAGNOSIS_REPAIR_MS} from './activation-diagnosis.mjs?v=1.2.0';
+import {difficultyFor,installationEffects} from './career-core.mjs?v=1.2.0';
+import {challengeFor,CHECK_STEPS} from './activation-checks.mjs?v=1.2.0';
 export {challengeFor,CHECK_STEPS};
-import {hashCase,random} from './lt32-core.mjs?v=1.1.2';
-export const ACTIVATION_VERSION=2;
+import {hashCase,random} from './lt32-core.mjs?v=1.2.0';
+export const ACTIVATION_VERSION=3;
 export const POSITION_DELAY=18000;
 export const ACTIVATION_STEPS=Object.freeze([
  ['equipment','Abrir cadastro de equipamento','Abra o cadastro do aparelho recebido na foto.'],
@@ -73,7 +74,7 @@ export function locationText(s){return `${s.address}\n${s.coordinates}`;}
 export function credentialsText(s){return `Olá, ${s.client}! Seu acesso ao rastreamento está liberado.\nLogin: ${s.login}\nSenha: ${s.password}`;}
 export function createActivation(caseId,details={}){
  const seed=hashCase(caseId),imei=imeiFor(seed),suffix=imei.slice(-6);
- return {version:ACTIVATION_VERSION,caseId,seed,difficulty:difficultyFor(details.difficulty).id,positionDelay:installationEffects(details.installation).gpsDelay,checks:[],client:details.client||'Anderson da Silva Anderson',vehicle:details.vehicle||'Ford Ka',installationLocation:details.installationLocation==='rear-trim'?'rear-trim':'rear-side',imei,serial:'LT32'+String(seed).padStart(10,'0'),iccid:'895501'+String(seed).padStart(10,'0')+'3401',login:'anderson.'+suffix,password:'Ander#'+suffix.slice(0,4)+'!',address:'Av. dos Andersons, 320 · Distrito Industrial',coordinates:'-25.432100, -49.271200',phase:'imei',imeiDraft:'',mazeStep:0,accessStep:0,elapsedMs:0,waitMs:0,commandSent:false,gpsReady:false,clipboard:null,chatTarget:'tech',chatDraft:'',locationSent:false,accessSent:false,finishMs:0,failure:null};
+ return {version:ACTIVATION_VERSION,caseId,seed,difficulty:difficultyFor(details.difficulty).id,positionDelay:installationEffects(details.installation).gpsDelay,diagnosis:createDiagnosis(caseId),checks:[],client:details.client||'Anderson da Silva Anderson',vehicle:details.vehicle||'Ford Ka',installationLocation:details.installationLocation==='rear-trim'?'rear-trim':'rear-side',imei,serial:'LT32'+String(seed).padStart(10,'0'),iccid:'895501'+String(seed).padStart(10,'0')+'3401',login:'anderson.'+suffix,password:'Ander#'+suffix.slice(0,4)+'!',address:'Av. dos Andersons, 320 · Distrito Industrial',coordinates:'-25.432100, -49.271200',phase:'imei',imeiDraft:'',mazeStep:0,accessStep:0,elapsedMs:0,waitMs:0,commandSent:false,gpsReady:false,clipboard:null,chatTarget:'tech',chatDraft:'',locationSent:false,accessSent:false,finishMs:0,failure:null};
 }
 const fail=(s,message)=>({...s,phase:'failed',failure:message});
 const clean=v=>String(v??'').trim().replace(/\r\n/g,'\n');
@@ -96,6 +97,15 @@ export function applyActivationAction(s,a){
   if(a.id!=='position')return fail(s,'O teste exigia solicitar a posição atual. Você enviou outro comando ao rastreador.');
   return {...s,commandSent:true,waitMs:0};
  }
+ if(a.type==='open-diagnosis'&&s.phase==='platform'&&s.commandSent&&!(diagnosisFault(s)!=='none'&&s.diagnosis.resolved))return enterDiagnosis(s);
+ if(a.type==='inspect-diagnostic'&&s.phase==='diagnosis'&&DIAGNOSIS_SOURCES.some(source=>source.id===a.id))return {...s,diagnosis:{...s.diagnosis,tab:a.id,reviewed:[...new Set([...s.diagnosis.reviewed,a.id])]}};
+ if(a.type==='resolve-diagnosis'&&s.phase==='diagnosis'){
+  if(s.diagnosis.reviewed.length!==3||!DIAGNOSIS_ACTIONS.some(option=>option.id===a.id))return s;
+  const evidence=diagnosticFor(s);
+  if(a.id!==evidence.correct)return fail(s,'A conduta escolhida não resolve o que os três quadros mostram. '+evidence.hint);
+  if(a.id==='wait')return {...s,phase:'platform',diagnosis:{...s.diagnosis,action:'wait'}};
+  return {...s,phase:'repairing',diagnosis:{...s.diagnosis,action:a.id,repairMs:0}};
+ }
  if(a.type==='copy-location'&&s.phase==='location'&&s.gpsReady)return {...s,clipboard:{kind:'location',text:locationText(s)}};
  if(a.type==='copy-credentials'&&s.phase==='credentials')return {...s,clipboard:{kind:'credentials',text:credentialsText(s)}};
  if(a.type==='chat-target'&&['tech','client'].includes(a.id))return {...s,chatTarget:a.id,chatDraft:''};
@@ -117,24 +127,41 @@ export function applyActivationAction(s,a){
 export function advanceActivation(s,ms){
  if(!Number.isFinite(ms)||ms<=0||s.phase==='failed')return s;
  const next={...s,elapsedMs:s.phase==='finish'?s.elapsedMs:s.elapsedMs+ms};
- if(s.phase==='platform'&&s.commandSent){next.waitMs=Math.min(s.positionDelay||POSITION_DELAY,s.waitMs+ms);if(next.waitMs>=(s.positionDelay||POSITION_DELAY)){next.phase='location';next.gpsReady=true;}}
+ if(s.phase==='platform'&&s.commandSent){
+  const delay=s.diagnosis.resolved?(s.positionDelay||POSITION_DELAY):DIAGNOSIS_REVIEW_MS;
+  next.waitMs=Math.min(delay,s.waitMs+ms);
+  if(next.waitMs>=delay){if(s.diagnosis.resolved){next.phase='location';next.gpsReady=true;}else return enterDiagnosis(next);}
+ }
+ if(s.phase==='repairing'){
+  const repairMs=Math.min(DIAGNOSIS_REPAIR_MS,s.diagnosis.repairMs+ms);next.diagnosis={...s.diagnosis,repairMs};
+  if(repairMs===DIAGNOSIS_REPAIR_MS){next.diagnosis.resolved=true;next.phase='platform';next.commandSent=false;next.waitMs=0;}
+ }
  if(s.phase==='finish')next.finishMs=(s.finishMs+ms)%60000;
  return next;
 }
 export function restoreActivation(raw,caseId,details={}){
- if(!raw||![1,ACTIVATION_VERSION].includes(raw.version)||raw.caseId!==caseId||!['imei','maze','platform','location','handoff','credentials','finish'].includes(raw.phase))return null;
+ if(!raw||![1,2,ACTIVATION_VERSION].includes(raw.version)||raw.caseId!==caseId||!['imei','maze','platform','diagnosis','repairing','location','handoff','credentials','finish'].includes(raw.phase))return null;
  const base=createActivation(caseId,details),mazeStep=raw.mazeStep,accessStep=raw.accessStep;
  if(raw.imei!==base.imei||!Number.isInteger(mazeStep)||mazeStep<0||mazeStep>20||!Number.isInteger(accessStep)||accessStep<0||accessStep>6)return null;
  if(raw.phase==='imei'&&(mazeStep||accessStep))return null;
  if(raw.phase==='maze'&&(mazeStep>=20||accessStep))return null;
- if(['platform','location','handoff','credentials','finish'].includes(raw.phase)&&mazeStep!==20)return null;
+ if(['platform','diagnosis','repairing','location','handoff','credentials','finish'].includes(raw.phase)&&mazeStep!==20)return null;
  if(['location','handoff','credentials','finish'].includes(raw.phase)&&(!raw.commandSent||!raw.gpsReady||raw.waitMs<base.positionDelay))return null;
  if(['handoff','credentials','finish'].includes(raw.phase)&&!raw.locationSent)return null;
  if(raw.phase==='handoff'&&accessStep>=6)return null;
  if(['credentials','finish'].includes(raw.phase)&&accessStep!==6)return null;
  if(raw.phase==='finish'&&!raw.accessSent)return null;
  const checks=raw.version===1?CHECK_STEPS.filter(i=>i<mazeStep):raw.checks;if(!Array.isArray(checks)||checks.some(i=>!CHECK_STEPS.includes(i)||i>mazeStep)||new Set(checks).size!==checks.length||CHECK_STEPS.some(i=>i<mazeStep&&!checks.includes(i)))return null;
- const next={...base,checks:[...checks],phase:raw.phase,mazeStep,accessStep,commandSent:!!raw.commandSent,gpsReady:!!raw.gpsReady,locationSent:!!raw.locationSent,accessSent:!!raw.accessSent,elapsedMs:Math.max(0,Number(raw.elapsedMs)||0),waitMs:Math.min(base.positionDelay,Math.max(0,Number(raw.waitMs)||0)),imeiDraft:String(raw.imeiDraft||'').slice(0,15),chatTarget:raw.chatTarget==='client'?'client':'tech',chatDraft:String(raw.chatDraft||'').slice(0,800),finishMs:Math.max(0,Number(raw.finishMs)||0)%60000};
+ const diagnosis=raw.version<3?createDiagnosis(caseId,true):restoreDiagnosis(raw.diagnosis,caseId);if(!diagnosis)return null;
+ const fault=diagnosisFault({...base,diagnosis}),waitMs=Number(raw.waitMs);
+ if(!Number.isFinite(waitMs)||waitMs<0||waitMs>base.positionDelay)return null;
+ if(['imei','maze'].includes(raw.phase)&&(raw.commandSent||raw.gpsReady||waitMs||diagnosis.reviewed.length||diagnosis.action!==null))return null;
+ if(['platform','diagnosis','repairing'].includes(raw.phase)&&(raw.gpsReady||accessStep))return null;
+ if(['location','handoff','credentials','finish'].includes(raw.phase)&&!diagnosis.resolved)return null;
+ if(raw.phase==='platform'&&(!raw.commandSent&&waitMs!==0||raw.commandSent&&waitMs>=(diagnosis.resolved?base.positionDelay:DIAGNOSIS_REVIEW_MS)||!diagnosis.resolved&&diagnosis.action!==null))return null;
+ if(raw.phase==='diagnosis'&&(!raw.commandSent||fault!=='none'&&diagnosis.resolved||diagnosis.action!==null||!diagnosis.reviewed.includes(diagnosis.tab)))return null;
+ if(raw.phase==='repairing'&&(!raw.commandSent||fault==='none'||diagnosis.resolved||diagnosis.action!==fault||diagnosis.reviewed.length!==3))return null;
+ const next={...base,diagnosis,checks:[...checks],phase:raw.phase,mazeStep,accessStep,commandSent:!!raw.commandSent,gpsReady:!!raw.gpsReady,locationSent:!!raw.locationSent,accessSent:!!raw.accessSent,elapsedMs:Math.max(0,Number(raw.elapsedMs)||0),waitMs:Math.min(base.positionDelay,Math.max(0,Number(raw.waitMs)||0)),imeiDraft:String(raw.imeiDraft||'').slice(0,15),chatTarget:raw.chatTarget==='client'?'client':'tech',chatDraft:String(raw.chatDraft||'').slice(0,800),finishMs:Math.max(0,Number(raw.finishMs)||0)%60000};
  if(raw.clipboard?.kind==='location'&&next.phase==='location')next.clipboard={kind:'location',text:locationText(next)};
  if(raw.clipboard?.kind==='credentials'&&next.phase==='credentials')next.clipboard={kind:'credentials',text:credentialsText(next)};
  return next;

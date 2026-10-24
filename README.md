@@ -4,7 +4,15 @@
 
 Código-fonte do jogo completo, com os cinco atos, imagens, testes e oficina 3D de prática.
 
-Versão 1.1.2. Campanha individual completa de navegador. Ato 1: Agendamento. Ato 2: Instalação 2D do LT-32 PRO. Ato 3: Testes e ativação com Cat e Bear. Ato 4: O grande roubo, com Anderson, o ladrão. Ato 5: Atuação anti furto com Rô, atendimento, rastreamento e perseguição final. O simulador LCV5 continua disponível separadamente para prática em 3D.
+Versão 1.2.0. Campanha individual completa de navegador. Ato 1: Agendamento. Ato 2: Instalação 2D do LT-32 PRO. Ato 3: Testes e ativação com Cat e Bear. Ato 4: O grande roubo, com Anderson, o ladrão. Ato 5: Atuação anti furto com Rô, atendimento, rastreamento e perseguição final. O simulador LCV5 continua disponível separadamente para prática em 3D.
+
+## Segunda parte: diagnóstico na ativação — versão 1.2.0
+
+A primeira posição pode revelar um vínculo de IMEI divergente, uma perda de alimentação depois do teste inicial ou falta de recepção GNSS no ambiente do teste. Também existem casos sem falha. O cenário varia por atendimento e permanece estável ao retomar o save.
+
+O jogador consulta Cadastro, Laudo e Telemetria, escolhe uma das quatro condutas embaralhadas e aguarda a confirmação. Nas falhas, precisa pedir uma nova posição depois da correção. No caso saudável, aguardar preserva o tempo já decorrido. O perfil Estagiário mostra uma dica adicional; uma conduta errada continua causando demissão com motivo específico e checkpoint nos perfis que o permitem.
+
+Saves de ativação das versões anteriores mantêm a espera original, sem falhas novas inseridas no meio da partida. Inicie outro atendimento para experimentar os diagnósticos. Regras, migração e verificação em [docs/diagnostico-ativacao.md](docs/diagnostico-ativacao.md).
 
 ## Melhoria por partes: escolhas de atendimento — versão 1.1.2
 
@@ -61,7 +69,7 @@ Abra `http://localhost:8080`. `dist/` é a raiz estática para publicação. Nã
 10. Recoloca o acabamento, fecha capô, porta e porta-malas e confere a instalação física. A instalação física é aprovada e oferece continuar para a ativação.
 11. No WhatsApp, o técnico envia imagens da etiqueta e do ponto escolhido. O jogador digita o IMEI de 15 dígitos.
 12. Bear assume a supervisão de 20 telas com posições e botões diferentes. A ordem atual indica a ação a executar; outras funções causam demissão.
-13. Na plataforma, o jogador solicita a posição e aguarda o GPS ficar verde. O técnico e Bear cobram agilidade com mensagens e notificações.
+13. Na plataforma, o jogador solicita a posição. Uma inconsistência abre o diagnóstico: comparar três fontes, escolher a conduta, aguardar a confirmação e solicitar uma nova posição. Sem falha, basta aguardar a aquisição normal. O técnico e Bear continuam cobrando agilidade.
 14. A localização deve ser copiada da plataforma e enviada ao contato do técnico. Após seis telas de liberação de acesso, o login e a senha devem ser copiados e enviados ao cliente.
 15. Técnico e cliente agradecem, Cat e Bear elogiam, e o veículo se move sozinho no mapa sob a mensagem “INSTALAÇÃO CONCLUÍDA COM SUCESSO”.
 16. O jogador segue para O grande roubo. Anderson, o ladrão, é apresentado em uma cidade vista de cima.
@@ -90,6 +98,7 @@ O menu também oferece instalação 2D isolada, ativação isolada, O grande rou
 - `dist/lt32-core.mjs`: regras, cabos por partida e retomada da instalação 2D.
 - `dist/lt32-car.mjs`: ilustrações SVG do carro, rastreador e explosão.
 - `dist/lt32.mjs`, `dist/lt32.css`, `dist/lt32.html`: interface 2D, controles e som.
+- `dist/activation-diagnosis.mjs`: cenários, evidências, condutas e estado do diagnóstico simulado.
 - `dist/activation-core.mjs`: sequência, IMEI por partida, comandos, espera, destinatários e retomada do Ato 3.
 - `dist/activation.mjs`, `dist/activation.css`, `dist/activation.html`: telas da ativação, WhatsApp, Bear, notificações e encerramento.
 - `dist/activation-visuals.mjs`: etiqueta com números exatos, imagem da instalação e mapa animado.
@@ -120,7 +129,7 @@ A proibição do painel é uma regra de roteiro solicitada pelo autor e aparece 
 
 ## Verificação
 
-96 testes automatizados cobrem roteiro, datas, proximidade, compatibilidade com saves antigos, isolamento dos modos, validação de mensagens, locais permitidos, todas as combinações de ligação do LT-32 PRO, ocultação, sequência de fechamento, entrega, retomada IMEI, 20 validações, comandos, espera por GPS, contatos e conteúdo das mensagens, liberação de acesso, movimento automático regras de movimento/colisão/caminhos, partida arcade, prisão, direção, saída de cena, compatibilidade do Ato 3 concluído com o Ato 4 a capacitação de 28 páginas, localização atualizada, perseguição final, bloqueios, prazo e regressões da oficina LCV5.
+103 testes automatizados cobrem roteiro, datas, proximidade, compatibilidade com saves antigos, isolamento dos modos, validação de mensagens, locais permitidos, todas as combinações de ligação do LT-32 PRO, ocultação, sequência de fechamento, entrega, retomada IMEI, 20 validações, comandos, espera por GPS, contatos e conteúdo das mensagens, liberação de acesso, movimento automático regras de movimento/colisão/caminhos, partida arcade, prisão, direção, saída de cena, compatibilidade do Ato 3 concluído com o Ato 4 a capacitação de 28 páginas, localização atualizada, perseguição final, bloqueios, prazo e regressões da oficina LCV5.
 
 Validação visual da versão 0.5: carro 2D, escolha do painel com explosão e fala da Cat; instalação completa por controles até a confirmação de entrega. O Ato 3 foi percorrido até a conclusão, incluindo os envios aos contatos corretos e o movimento automático. O Ato 4 também foi concluído por teclado e por controles de toque, e a ligação errada foi testada até a prisão. Os registros em `docs/lt32-pro.md`, `docs/ativacao.md` e `docs/grande-roubo.md` detalham as verificações. Testes em aparelhos físicos não foram realizados.
 

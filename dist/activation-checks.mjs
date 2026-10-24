@@ -1,4 +1,4 @@
-import {shuffleOptions} from './option-order.mjs?v=1.1.2';
+import {shuffleOptions} from './option-order.mjs?v=1.2.0';
 export const CHECK_STEPS=[1,3,9,10,15];
 function baseChallenge(s){
  if(s.phase!=='maze'||!CHECK_STEPS.includes(s.mazeStep))return null;

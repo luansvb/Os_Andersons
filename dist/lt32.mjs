@@ -1,7 +1,7 @@
-import {ShiftSession,portrait} from './shift-session.mjs?v=1.1.2';
-import {installationSummary} from './career-core.mjs?v=1.1.2';
-import {LEADS,LOCATIONS,ROLE_INFO,installationLayout,locationsFor,createInstallation,applyAction,inspectWire,restoreInstallation,hashCase} from './lt32-core.mjs?v=1.1.2';
-import {carSvg,trackerSvg} from './lt32-car.mjs?v=1.1.2';
+import {ShiftSession,portrait} from './shift-session.mjs?v=1.2.0';
+import {installationSummary} from './career-core.mjs?v=1.2.0';
+import {LEADS,LOCATIONS,ROLE_INFO,installationLayout,locationsFor,createInstallation,applyAction,inspectWire,restoreInstallation,hashCase} from './lt32-core.mjs?v=1.2.0';
+import {carSvg,trackerSvg} from './lt32-car.mjs?v=1.2.0';
 const app=document.querySelector('#lt32-app'),modal=document.querySelector('#lt32-modal');
 let desk=null,deskTick=performance.now(),state=null,context=null,booted=false,showFired=false,failTimeout=0,failInterval=0,toastTimeout=0,drag=null,focusBefore=null,ignoreClickUntil=0;
 const escape=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

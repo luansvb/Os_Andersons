@@ -1,8 +1,8 @@
-import {recoveryRules,difficultyFor} from './career-core.mjs?v=1.1.2';
+import {recoveryRules,difficultyFor} from './career-core.mjs?v=1.2.0';
 export const rulesFor=s=>s?.rules||RULES;
-import {moveScreenCar} from './screen-driving.mjs?v=1.1.2';
-import {WORLD,collides,locationName} from './heist-core.mjs?v=1.1.2';
-import {RO_LECTURE} from './ro-lecture.mjs?v=1.1.2';
+import {moveScreenCar} from './screen-driving.mjs?v=1.2.0';
+import {WORLD,collides,locationName} from './heist-core.mjs?v=1.2.0';
+import {RO_LECTURE} from './ro-lecture.mjs?v=1.2.0';
 export {RO_LECTURE};
 export const RECOVERY_VERSION=1;
 export const CONTACT_BRIEF='Primeiro registre como o desaparecimento ocorreu. A classificação, o rastreamento e os comandos vêm nas etapas seguintes, conforme as informações deste caso.';
