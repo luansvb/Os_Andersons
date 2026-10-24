@@ -1,5 +1,8 @@
-import {hashCase,random} from './lt32-core.mjs';
-export const ACTIVATION_VERSION=1;
+import {difficultyFor,installationEffects} from './career-core.mjs?v=1.1.0';
+import {challengeFor,CHECK_STEPS} from './activation-checks.mjs?v=1.1.0';
+export {challengeFor,CHECK_STEPS};
+import {hashCase,random} from './lt32-core.mjs?v=1.1.0';
+export const ACTIVATION_VERSION=2;
 export const POSITION_DELAY=18000;
 export const ACTIVATION_STEPS=Object.freeze([
  ['equipment','Abrir cadastro de equipamento','Abra o cadastro do aparelho recebido na foto.'],
@@ -64,13 +67,13 @@ export const BEAR_LINES=Object.freeze([
 ]);
 function shuffled(items,rng){const a=[...items];for(let i=a.length-1;i;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 export function taskFor(s){return s.phase==='maze'?ACTIVATION_STEPS[s.mazeStep]:s.phase==='handoff'?ACCESS_STEPS[s.accessStep]:null;}
-export function buttonsFor(s){const task=taskFor(s);if(!task)return [];const pool=[...ACTIVATION_STEPS,...ACCESS_STEPS,{id:'delete',label:'Excluir equipamento'},{id:'skip',label:'Liberar sem testes'},{id:'archive',label:'Arquivar atendimento'},{id:'cancel',label:'Cancelar ativação'}].filter(t=>t.id!==task.id);const rng=random(s.seed+(s.phase==='maze'?s.mazeStep:100+s.accessStep)*7919);return shuffled([task,...shuffled(pool,rng).slice(0,7)],rng);}
+export function buttonsFor(s){const task=taskFor(s);if(!task)return [];const pool=[...ACTIVATION_STEPS,...ACCESS_STEPS,{id:'delete',label:'Excluir equipamento'},{id:'skip',label:'Liberar sem testes'},{id:'archive',label:'Arquivar atendimento'},{id:'cancel',label:'Cancelar ativação'}].filter(t=>t.id!==task.id);const rng=random(s.seed+(s.phase==='maze'?s.mazeStep:100+s.accessStep)*7919);return shuffled([task,...shuffled(pool,rng).slice(0,difficultyFor(s.difficulty).choices-1)],rng);}
 export function imeiFor(seed){const rng=random(seed);let digits='86';for(let i=0;i<12;i++)digits+=Math.floor(rng()*10);const sum=[...digits].reduce((sum,d,i)=>{let n=Number(d)*(i%2?2:1);return sum+(n>9?n-9:n);},0);return digits+((10-sum%10)%10);}
 export function locationText(s){return `${s.address}\n${s.coordinates}`;}
 export function credentialsText(s){return `Olá, ${s.client}! Seu acesso ao rastreamento está liberado.\nLogin: ${s.login}\nSenha: ${s.password}`;}
 export function createActivation(caseId,details={}){
  const seed=hashCase(caseId),imei=imeiFor(seed),suffix=imei.slice(-6);
- return {version:ACTIVATION_VERSION,caseId,seed,client:details.client||'Anderson da Silva Anderson',vehicle:details.vehicle||'Ford Ka',installationLocation:details.installationLocation==='rear-trim'?'rear-trim':'rear-side',imei,serial:'LT32'+String(seed).padStart(10,'0'),iccid:'895501'+String(seed).padStart(10,'0')+'3401',login:'anderson.'+suffix,password:'Ander#'+suffix.slice(0,4)+'!',address:'Av. dos Andersons, 320 · Distrito Industrial',coordinates:'-25.432100, -49.271200',phase:'imei',imeiDraft:'',mazeStep:0,accessStep:0,elapsedMs:0,waitMs:0,commandSent:false,gpsReady:false,clipboard:null,chatTarget:'tech',chatDraft:'',locationSent:false,accessSent:false,finishMs:0,failure:null};
+ return {version:ACTIVATION_VERSION,caseId,seed,difficulty:difficultyFor(details.difficulty).id,positionDelay:installationEffects(details.installation).gpsDelay,checks:[],client:details.client||'Anderson da Silva Anderson',vehicle:details.vehicle||'Ford Ka',installationLocation:details.installationLocation==='rear-trim'?'rear-trim':'rear-side',imei,serial:'LT32'+String(seed).padStart(10,'0'),iccid:'895501'+String(seed).padStart(10,'0')+'3401',login:'anderson.'+suffix,password:'Ander#'+suffix.slice(0,4)+'!',address:'Av. dos Andersons, 320 · Distrito Industrial',coordinates:'-25.432100, -49.271200',phase:'imei',imeiDraft:'',mazeStep:0,accessStep:0,elapsedMs:0,waitMs:0,commandSent:false,gpsReady:false,clipboard:null,chatTarget:'tech',chatDraft:'',locationSent:false,accessSent:false,finishMs:0,failure:null};
 }
 const fail=(s,message)=>({...s,phase:'failed',failure:message});
 const clean=v=>String(v??'').trim().replace(/\r\n/g,'\n');
@@ -81,8 +84,9 @@ export function applyActivationAction(s,a){
   if(!/^\d{15}$/.test(String(a.value))||a.value!==s.imei)return fail(s,'O IMEI digitado não é o da etiqueta do equipamento. Um número errado já muda o aparelho inteiro, Anderson.');
   return {...s,imeiDraft:a.value,phase:'maze'};
  }
+ if(a.type==='solve-check'){const check=challengeFor(s);if(!check||check.solved)return s;if(a.id!==check.correct)return fail(s,'A conferência não corresponde aos dados recebidos. '+check.instruction);return {...s,checks:[...(s.checks||[]),s.mazeStep]};}
  if(a.type==='workflow'){
-  const task=taskFor(s);if(!task)return s;
+  const task=taskFor(s);if(!task)return s;const check=challengeFor(s);if(check&&!check.solved)return s;
   if(a.id!==task.id)return fail(s,`A etapa pedia “${task.label}”. Você clicou em outra função e comprometeu a ativação.`);
   if(s.phase==='maze'){const mazeStep=s.mazeStep+1;return {...s,mazeStep,phase:mazeStep===20?'platform':'maze'};}
   const accessStep=s.accessStep+1;return {...s,accessStep,phase:accessStep===6?'credentials':'handoff'};
@@ -113,23 +117,24 @@ export function applyActivationAction(s,a){
 export function advanceActivation(s,ms){
  if(!Number.isFinite(ms)||ms<=0||s.phase==='failed')return s;
  const next={...s,elapsedMs:s.phase==='finish'?s.elapsedMs:s.elapsedMs+ms};
- if(s.phase==='platform'&&s.commandSent){next.waitMs=Math.min(POSITION_DELAY,s.waitMs+ms);if(next.waitMs>=POSITION_DELAY){next.phase='location';next.gpsReady=true;}}
+ if(s.phase==='platform'&&s.commandSent){next.waitMs=Math.min(s.positionDelay||POSITION_DELAY,s.waitMs+ms);if(next.waitMs>=(s.positionDelay||POSITION_DELAY)){next.phase='location';next.gpsReady=true;}}
  if(s.phase==='finish')next.finishMs=(s.finishMs+ms)%60000;
  return next;
 }
 export function restoreActivation(raw,caseId,details={}){
- if(!raw||raw.version!==ACTIVATION_VERSION||raw.caseId!==caseId||!['imei','maze','platform','location','handoff','credentials','finish'].includes(raw.phase))return null;
+ if(!raw||![1,ACTIVATION_VERSION].includes(raw.version)||raw.caseId!==caseId||!['imei','maze','platform','location','handoff','credentials','finish'].includes(raw.phase))return null;
  const base=createActivation(caseId,details),mazeStep=raw.mazeStep,accessStep=raw.accessStep;
  if(raw.imei!==base.imei||!Number.isInteger(mazeStep)||mazeStep<0||mazeStep>20||!Number.isInteger(accessStep)||accessStep<0||accessStep>6)return null;
  if(raw.phase==='imei'&&(mazeStep||accessStep))return null;
  if(raw.phase==='maze'&&(mazeStep>=20||accessStep))return null;
  if(['platform','location','handoff','credentials','finish'].includes(raw.phase)&&mazeStep!==20)return null;
- if(['location','handoff','credentials','finish'].includes(raw.phase)&&(!raw.commandSent||!raw.gpsReady||raw.waitMs<POSITION_DELAY))return null;
+ if(['location','handoff','credentials','finish'].includes(raw.phase)&&(!raw.commandSent||!raw.gpsReady||raw.waitMs<base.positionDelay))return null;
  if(['handoff','credentials','finish'].includes(raw.phase)&&!raw.locationSent)return null;
  if(raw.phase==='handoff'&&accessStep>=6)return null;
  if(['credentials','finish'].includes(raw.phase)&&accessStep!==6)return null;
  if(raw.phase==='finish'&&!raw.accessSent)return null;
- const next={...base,phase:raw.phase,mazeStep,accessStep,commandSent:!!raw.commandSent,gpsReady:!!raw.gpsReady,locationSent:!!raw.locationSent,accessSent:!!raw.accessSent,elapsedMs:Math.max(0,Number(raw.elapsedMs)||0),waitMs:Math.min(POSITION_DELAY,Math.max(0,Number(raw.waitMs)||0)),imeiDraft:String(raw.imeiDraft||'').slice(0,15),chatTarget:raw.chatTarget==='client'?'client':'tech',chatDraft:String(raw.chatDraft||'').slice(0,800),finishMs:Math.max(0,Number(raw.finishMs)||0)%60000};
+ const checks=raw.version===1?CHECK_STEPS.filter(i=>i<mazeStep):raw.checks;if(!Array.isArray(checks)||checks.some(i=>!CHECK_STEPS.includes(i)||i>mazeStep)||new Set(checks).size!==checks.length||CHECK_STEPS.some(i=>i<mazeStep&&!checks.includes(i)))return null;
+ const next={...base,checks:[...checks],phase:raw.phase,mazeStep,accessStep,commandSent:!!raw.commandSent,gpsReady:!!raw.gpsReady,locationSent:!!raw.locationSent,accessSent:!!raw.accessSent,elapsedMs:Math.max(0,Number(raw.elapsedMs)||0),waitMs:Math.min(base.positionDelay,Math.max(0,Number(raw.waitMs)||0)),imeiDraft:String(raw.imeiDraft||'').slice(0,15),chatTarget:raw.chatTarget==='client'?'client':'tech',chatDraft:String(raw.chatDraft||'').slice(0,800),finishMs:Math.max(0,Number(raw.finishMs)||0)%60000};
  if(raw.clipboard?.kind==='location'&&next.phase==='location')next.clipboard={kind:'location',text:locationText(next)};
  if(raw.clipboard?.kind==='credentials'&&next.phase==='credentials')next.clipboard={kind:'credentials',text:credentialsText(next)};
  return next;

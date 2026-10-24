@@ -1,11 +1,13 @@
-import {moveScreenCar} from './screen-driving.mjs';
-import {WORLD,collides,locationName} from './heist-core.mjs';
-import {RO_LECTURE} from './ro-lecture.mjs';
+import {recoveryRules,difficultyFor} from './career-core.mjs?v=1.1.0';
+export const rulesFor=s=>s?.rules||RULES;
+import {moveScreenCar} from './screen-driving.mjs?v=1.1.0';
+import {WORLD,collides,locationName} from './heist-core.mjs?v=1.1.0';
+import {RO_LECTURE} from './ro-lecture.mjs?v=1.1.0';
 export {RO_LECTURE};
 export const RECOVERY_VERSION=1;
 export const ANSWERS=['E quem disse que isso é problema nosso?','Como ocorreu, senhor?','Quem com ferro fere, com ferro será ferido.','Como você deixou isso acontecer, senhor?','Você procurou bem?'];
 export const REPORT='Estacionei o veículo em frente à minha casa. Duas horas depois, quando voltei, ele já não estava mais lá.';
-export const RULES=Object.freeze({deadline:70,window:1.5,hold:2.2,minDistance:65,maxDistance:145,maxRelativeSpeed:48,locationAge:12});
+export const RULES=Object.freeze(recoveryRules());
 // Rota inteiramente fictícia. As curvas arredondadas cabem nas ruas da cidade do Ato 4.
 const corners=[[320,1190],[1880,1190],[1880,270],[320,270]],radius=42;
 export const ROUTE=[];
@@ -17,11 +19,11 @@ const segments=ROUTE.map((p,i)=>{const next=ROUTE[(i+1)%ROUTE.length];return {p,
 export const ROUTE_LENGTH=segments.reduce((v,s)=>v+s.length,0);
 export function routePosition(distance){let left=((distance%ROUTE_LENGTH)+ROUTE_LENGTH)%ROUTE_LENGTH;for(const s of segments){if(left<=s.length)return {x:s.p.x+(s.next.x-s.p.x)*left/s.length,y:s.p.y+(s.next.y-s.p.y)*left/s.length,angle:s.angle};left-=s.length;}return {...ROUTE[0],angle:0};}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-export function createRecovery(caseId){return {version:RECOVERY_VERSION,caseId,phase:'alert',phaseTime:0,elapsed:0,lectureIndex:0,lectureRead:false,lectureSeen:[],lectureCompleted:false,classified:false,reportAsked:false,platformOpen:false,targetDistance:520,target:{...routePosition(520),speed:155},copied:null,draft:'',destination:'response',sent:null,patrol:null,raceTime:0,stable:0,commandsOpen:false,windowLeft:null,blockSent:false,collisionTime:0,failure:null};}
+export function createRecovery(caseId,details={}){return {rules:recoveryRules(details.difficulty,details.installation),difficulty:difficultyFor(details.difficulty).id,collisionCount:0,version:RECOVERY_VERSION,caseId,phase:'alert',phaseTime:0,elapsed:0,lectureIndex:0,lectureRead:false,lectureSeen:[],lectureCompleted:false,classified:false,reportAsked:false,platformOpen:false,targetDistance:520,target:{...routePosition(520),speed:155},copied:null,draft:'',destination:'response',sent:null,patrol:null,raceTime:0,stable:0,commandsOpen:false,windowLeft:null,blockSent:false,collisionTime:0,failure:null};}
 const lose=(s,reason,phase='lost')=>({...s,phase,phaseTime:0,failure:reason,stable:0});
 export function positionText(s){const p=s.target;return `FORD KA · ${locationName(p)} · setor ${Math.round(p.x/10)}-${Math.round(p.y/10)}\nGPS ${(-23.5505+p.y*.000006).toFixed(5)}, ${(-46.6333+p.x*.000006).toFixed(5)}\nAtualização #${Math.floor(s.elapsed)}`;}
-export const locationFresh=s=>!!s.copied&&s.elapsed-s.copied.at<=RULES.locationAge;
-export function proximity(s){if(!s.patrol)return {distance:Infinity,heading:0,relativeSpeed:Infinity,behind:0,lateral:Infinity,qualified:false};const dx=s.target.x-s.patrol.x,dy=s.target.y-s.patrol.y,distance=Math.hypot(dx,dy),heading=Math.cos(s.patrol.angle-s.target.angle),relativeSpeed=Math.abs(s.patrol.speed-s.target.speed),behind=dx*Math.cos(s.target.angle)+dy*Math.sin(s.target.angle),lateral=Math.abs(-dx*Math.sin(s.target.angle)+dy*Math.cos(s.target.angle));return {distance,heading,relativeSpeed,behind,lateral,qualified:distance>=RULES.minDistance&&distance<=RULES.maxDistance&&heading>.88&&relativeSpeed<=RULES.maxRelativeSpeed&&behind>35&&lateral<42};}
+export const locationFresh=s=>!!s.copied&&s.elapsed-s.copied.at<=rulesFor(s).locationAge;
+export function proximity(s){if(!s.patrol)return {distance:Infinity,heading:0,relativeSpeed:Infinity,behind:0,lateral:Infinity,qualified:false};const dx=s.target.x-s.patrol.x,dy=s.target.y-s.patrol.y,distance=Math.hypot(dx,dy),heading=Math.cos(s.patrol.angle-s.target.angle),relativeSpeed=Math.abs(s.patrol.speed-s.target.speed),behind=dx*Math.cos(s.target.angle)+dy*Math.sin(s.target.angle),lateral=Math.abs(-dx*Math.sin(s.target.angle)+dy*Math.cos(s.target.angle));return {distance,heading,relativeSpeed,behind,lateral,qualified:distance>=rulesFor(s).minDistance&&distance<=rulesFor(s).maxDistance&&heading>.88&&relativeSpeed<=rulesFor(s).maxRelativeSpeed&&behind>35&&lateral<42};}
 export function canBlock(s){const p=proximity(s);return s.phase==='chase'&&s.windowLeft!==null&&s.windowLeft>0&&p.distance>=42&&p.distance<=175&&p.heading>.75&&p.behind>8;}
 export function applyRecoveryAction(s,a){
  if(['fired','lost','finish'].includes(s.phase))return s;
@@ -61,11 +63,11 @@ export function advanceRecovery(s,input={},seconds=0){
  }
  if(s.phase==='chase'){
   n.raceTime=s.raceTime+dt;n.collisionTime=Math.max(0,s.collisionTime-dt);
-  const motion=moveScreenCar(s.patrol,input,dt,{speed:180,turboSpeed:310,blocked:(x,y)=>collides(x,y,23)});n.patrol=motion.car;if(motion.hit)n.collisionTime=.65;
-  const p=proximity(n);n.stable=p.qualified?Math.min(RULES.hold,s.stable+dt):Math.max(0,s.stable-dt*2.5);
+  const motion=moveScreenCar(s.patrol,input,dt,{speed:180,turboSpeed:310,blocked:(x,y)=>collides(x,y,23)});n.patrol=motion.car;if(motion.hit){if(!(s.collisionTime>0))n.collisionCount=(s.collisionCount||0)+1;n.collisionTime=.65;}
+  const p=proximity(n);n.stable=p.qualified?Math.min(rulesFor(s).hold,s.stable+dt):Math.max(0,s.stable-dt*2.5);
   if(s.windowLeft!==null){n.windowLeft=Math.max(0,s.windowLeft-dt);if(n.windowLeft<=0)return lose(n,'A janela de bloqueio passou. Você demorou demais para enviar o comando.');}
-  else if(n.stable>=RULES.hold)n.windowLeft=RULES.window;
-  if(n.raceTime>=RULES.deadline)return lose(n,'O Ford Ka escapou do acompanhamento. O tempo da operação acabou.');
+  else if(n.stable>=rulesFor(s).hold)n.windowLeft=rulesFor(s).window;
+  if(n.raceTime>=rulesFor(s).deadline)return lose(n,'O Ford Ka escapou do acompanhamento. O tempo da operação acabou.');
  }
  return n;
 }
@@ -90,10 +92,10 @@ export function roGuidance(s){
  if(p.distance>145||s.patrol.speed<s.target.speed-48)return 'MAIS PERTO, ANDERSON! AJUSTE A VELOCIDADE.';
  return 'ISSO! MANTENHA ATRÁS DO KA. ESPERE MEU AVISO!';
 }
-export function restoreRecovery(raw,caseId){
+export function restoreRecovery(raw,caseId,details={}){
  const phases=['alert','contact','classify','lecture','tracking','briefing','countdown','chase','stopping','finish'];
  if(!raw||raw.version!==RECOVERY_VERSION||raw.caseId!==caseId||!phases.includes(raw.phase))return null;
- const s=createRecovery(caseId),phase=raw.phase,finite=v=>Number.isFinite(v)&&v>=0;
+ const s=createRecovery(caseId,details),phase=raw.phase,finite=v=>Number.isFinite(v)&&v>=0;
  if(![raw.elapsed,raw.phaseTime,raw.targetDistance,raw.raceTime,raw.stable].every(finite))return null;
  if(!Number.isInteger(raw.lectureIndex)||raw.lectureIndex<0||raw.lectureIndex>=RO_LECTURE.length||!Array.isArray(raw.lectureSeen))return null;
  if(!raw.lectureSeen.every((v,i)=>v===i)||raw.lectureSeen.length>RO_LECTURE.length)return null;
@@ -105,10 +107,10 @@ export function restoreRecovery(raw,caseId){
  if(['briefing','countdown','chase','stopping','finish'].includes(phase)&&(!copied||raw.sent!==copied.text))return null;
  if(['countdown','chase','stopping','finish'].includes(phase)){
   if(!raw.patrol||![raw.patrol.x,raw.patrol.y,raw.patrol.angle,raw.patrol.speed].every(Number.isFinite)||collides(raw.patrol.x,raw.patrol.y,20)||Math.abs(raw.patrol.speed)>311)return null;
-  if(raw.raceTime>RULES.deadline+.1||raw.stable>RULES.hold+.01)return null;
-  if(raw.windowLeft!==null&&(!finite(raw.windowLeft)||raw.windowLeft>RULES.window))return null;
+  if(raw.raceTime>rulesFor(s).deadline+.1||raw.stable>rulesFor(s).hold+.01)return null;
+  if(raw.windowLeft!==null&&(!finite(raw.windowLeft)||raw.windowLeft>rulesFor(s).window))return null;
   if(phase==='chase'&&raw.windowLeft!==null&&raw.windowLeft<=0)return null;
  }
  if(['stopping','finish'].includes(phase)&&(!raw.blockSent||raw.windowLeft===null||raw.windowLeft<=0||!raw.commandsOpen))return null;
- return {...s,phase,elapsed:raw.elapsed,phaseTime:raw.phaseTime,targetDistance:raw.targetDistance,target:{...routePosition(raw.targetDistance),speed:phase==='finish'?0:phase==='stopping'?Math.max(0,155-raw.phaseTime*140):phase==='tracking'?112:155},reportAsked:!!raw.reportAsked,classified:!!raw.classified,platformOpen:!!raw.platformOpen,lectureIndex:raw.lectureIndex,lectureRead:!!raw.lectureRead,lectureSeen:[...raw.lectureSeen],lectureCompleted:!!raw.lectureCompleted,copied,draft:String(raw.draft??'').slice(0,500),destination:raw.destination==='client'?'client':'response',sent:raw.sent??null,patrol:raw.patrol?{...raw.patrol}:null,raceTime:raw.raceTime,stable:raw.stable,commandsOpen:!!raw.commandsOpen,windowLeft:raw.windowLeft??null,blockSent:!!raw.blockSent};
+ return {...s,collisionCount:Math.max(0,Number(raw.collisionCount)||0),phase,elapsed:raw.elapsed,phaseTime:raw.phaseTime,targetDistance:raw.targetDistance,target:{...routePosition(raw.targetDistance),speed:phase==='finish'?0:phase==='stopping'?Math.max(0,155-raw.phaseTime*140):phase==='tracking'?112:155},reportAsked:!!raw.reportAsked,classified:!!raw.classified,platformOpen:!!raw.platformOpen,lectureIndex:raw.lectureIndex,lectureRead:!!raw.lectureRead,lectureSeen:[...raw.lectureSeen],lectureCompleted:!!raw.lectureCompleted,copied,draft:String(raw.draft??'').slice(0,500),destination:raw.destination==='client'?'client':'response',sent:raw.sent??null,patrol:raw.patrol?{...raw.patrol}:null,raceTime:raw.raceTime,stable:raw.stable,commandsOpen:!!raw.commandsOpen,windowLeft:raw.windowLeft??null,blockSent:!!raw.blockSent};
 }

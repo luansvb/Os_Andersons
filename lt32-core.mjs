@@ -33,7 +33,7 @@ export function hashCase(value){let n=2166136261;for(const c of String(value)){n
 function shuffled(values,rng){const a=[...values];for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 export function makeWires(seed,count=12){const rng=random(seed),roles=shuffled(Object.keys(ROLE_INFO).slice(0,count),rng),colors=shuffled(['#8fa7b1','#df8867','#e6c781','#79ac98','#b690b0','#d5d7c4','#71a5b3','#c5b981','#bc8a94','#94b366','#bb9d6b','#829ac7'].slice(0,count),rng);return roles.map((role,i)=>({id:'wire-'+i,letter:String.fromCharCode(65+i),role,color:colors[i],bend:Math.round(rng()*210)-105,root:Math.floor(rng()*roles.length)}));}
 export function inspectWire(state,id){const wire=state.wires.find(w=>w.id===id);return wire?{...wire,...ROLE_INFO[wire.role]}:null;}
-export function createInstallation(caseId,seed=hashCase(caseId)){return {version:LT32_VERSION,caseId,seed,phase:'location',location:null,wires:makeWires(seed),connections:{},selected:null,antennaUp:false,secured:false,hidden:false,openParts:['trim','hood','door','trunk'],failure:null};}
+export function createInstallation(caseId,seed=hashCase(caseId)){return {version:LT32_VERSION,caseId,seed,phase:'location',location:null,wires:makeWires(seed),connections:{},selected:null,antennaUp:false,secured:false,tidy:false,signalChecked:false,hidden:false,openParts:['trim','hood','door','trunk'],failure:null};}
 export function failed(state,reason){return {...state,phase:'explosion',selected:null,failure:reason};}
 export function applyAction(previous,action){
  if(['explosion','success'].includes(previous.phase))return previous;
@@ -52,6 +52,8 @@ export function applyAction(previous,action){
   if(wire.role!==lead.role)return failed(state,`O cabo ${wire.letter} (${ROLE_INFO[wire.role].label.toLowerCase()}) foi ligado ao fio ${lead.name.toLowerCase()} do LT-32 PRO. Essa ligação está errada.`);
   state.connections[lead.id]=wire.id;state.selected=null;if(Object.keys(state.connections).length===LEADS.length)state.phase='hiding';return state;
  }
+ if(action.type==='tidy'&&state.phase==='hiding'){state.tidy=true;return state;}
+ if(action.type==='signal-check'&&state.phase==='hiding'){state.signalChecked=true;return state;}
  if(action.type==='flip'&&state.phase==='hiding'){state.antennaUp=!state.antennaUp;return state;}
  if(action.type==='secure'&&state.phase==='hiding'){state.secured=!state.secured;return state;}
  if(action.type==='hide'&&state.phase==='hiding'){
@@ -83,7 +85,7 @@ export function restoreInstallation(raw,caseId){
   const count=Object.keys(state.connections).length;
   if(['hiding','closing','success'].includes(raw.phase)&&count!==4)return null;
   if(raw.phase==='wiring'&&count===4)return null;
-  state.phase=raw.phase;state.antennaUp=!!raw.antennaUp;state.secured=!!raw.secured;state.hidden=!!raw.hidden;
+  state.phase=raw.phase;state.antennaUp=!!raw.antennaUp;state.secured=!!raw.secured;state.tidy=!!raw.tidy;state.signalChecked=!!raw.signalChecked;state.hidden=!!raw.hidden;
   if(!Array.isArray(raw.openParts)||raw.openParts.some(p=>!['trim','hood','door','trunk'].includes(p)))return null;
   state.openParts=[...new Set(raw.openParts)];
   if(['closing','success'].includes(state.phase)&&(!state.hidden||!state.secured||!state.antennaUp))return null;
