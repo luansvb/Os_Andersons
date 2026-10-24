@@ -1,0 +1,16 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+import {build} from 'esbuild';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const source=path.join(root,'workshop/lcv5');
+const [template,data,guide]=await Promise.all(['template.html','install-data.json','install-guide.js'].map(name=>readFile(path.join(source,name),'utf8')));
+const photos={};
+for(const name of ['top','connectors','side','leds','bottom','connector14','connector16','harness14','harness16'])photos[name]='data:image/jpeg;base64,'+(await readFile(path.join(source,'photos',name+'.jpg'))).toString('base64');
+const result=await build({entryPoints:[path.join(source,'game.js')],bundle:true,minify:true,format:'iife',platform:'browser',target:['es2022'],write:false,legalComments:'inline'});
+const safe=s=>s.replace(/<\/script/gi,'<\\/script');
+let html=template.replace('{{INSTALL_DATA}}',()=>safe(data)).replace('{{INSTALL_SCRIPT}}',()=>safe(guide)).replace('{{PHOTOS}}',()=>JSON.stringify(photos)).replace('{{LAB_ENGINE}}',()=>safe(result.outputFiles[0].text));
+if(/\{\{(?:INSTALL_|PHOTOS|LAB_ENGINE)/.test(html))throw Error('Oficina não foi empacotada.');
+if(Buffer.byteLength(html)>4000000)throw Error('Oficina ultrapassou o orçamento de carregamento.');
+await mkdir(path.join(root,'dist'),{recursive:true});await writeFile(path.join(root,'dist/workshop.html'),html);
+console.log(`Oficina preparada: ${(Buffer.byteLength(html)/1024/1024).toFixed(2)} MB · engine e fotos locais.`);
