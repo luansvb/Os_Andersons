@@ -1,4 +1,4 @@
-export const RELEASE='1.1.2';
+export const RELEASE='1.2.0';
 export const ACT_NAMES=['Agendamento','Instalação','Ativação','O grande roubo','Atuação anti furto'];
 export const DIFFICULTIES=Object.freeze([
  {id:'training',name:'Estagiário',description:'Mais tempo, dicas e checkpoints.',checkpoints:true,patienceMs:100000,notificationMs:6500,choices:5,mapSpeed:.7,deadline:100,window:3.2,hold:1.6},
@@ -80,7 +80,9 @@ export const MOOD_LABELS={calm:'Observando',suspicious:'Desconfiando',angry:'Sem
 export function pressureMood(value,completed=false){return completed?'happy':value>=68?'angry':value>=32?'suspicious':'calm';}
 export function reactiveLine(act,phase,action,repeats,pressure){
  if(repeats>=3)return 'ANDERSON, VOCÊ JÁ FEZ ISSO TRÊS VEZES. O BOTÃO NÃO MUDA POR SOLIDARIEDADE!';
- if(act===3&&phase==='platform')return 'O GPS ESTÁ RESPONDENDO. NÃO ENVIE OUTRO COMANDO SÓ PARA PARECER OCUPADO.';
+ if(act===3&&phase==='diagnosis')return 'CRUZE CADASTRO, LAUDO E TELEMETRIA. REENVIAR COMANDO NÃO CORRIGE O PROBLEMA.';
+ if(act===3&&phase==='repairing')return 'CONDUTA REGISTRADA. ESPERE A CONFIRMAÇÃO E DEPOIS PEÇA UMA NOVA POSIÇÃO.';
+ if(act===3&&phase==='platform')return 'CONFIRA O GPS E OS INDICADORES. REENVIAR O COMANDO NÃO CORRIGE UMA FALHA.';
  if(act===3&&action==='chat-target')return 'CONFERE O SOBRENOME: TÉCNICO NÃO É CLIENTE. EU SEI QUE OS DOIS SÃO ANDERSON!';
  if(act===1&&phase==='calendar')return 'O HORÁRIO É O ÚLTIMO QUE O CLIENTE CONFIRMOU. MEMÓRIA SELETIVA NÃO AGENDA CARRO!';
  if(act===2&&phase==='wiring')return 'EXAMINE O CABO ANTES DE LIGAR. A SEGURADORA JÁ BLOQUEOU O MEU NÚMERO!';

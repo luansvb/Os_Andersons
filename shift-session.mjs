@@ -1,5 +1,5 @@
-import {portrait as applicantPortrait} from './heist-art.mjs?v=1.1.2';
-import {ACT_NAMES,DIFFICULTIES,difficultyFor,emptyMetrics,sanitizeMetrics,pressureMood,MOOD_LABELS,reactiveLine,scoreReport,mergeMetrics} from './career-core.mjs?v=1.1.2';
+import {portrait as applicantPortrait} from './heist-art.mjs?v=1.2.0';
+import {ACT_NAMES,DIFFICULTIES,difficultyFor,emptyMetrics,sanitizeMetrics,pressureMood,MOOD_LABELS,reactiveLine,scoreReport,mergeMetrics} from './career-core.mjs?v=1.2.0';
 
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
