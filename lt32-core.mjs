@@ -1,6 +1,6 @@
 // LT32 PRO v.04-082025, manual fornecido pelo autor: páginas 8–10.
 // Os pontos do veículo são fictícios. A proibição do painel é uma regra do jogo.
-import {shuffleOptions} from './option-order.mjs?v=1.1.1';
+import {shuffleOptions} from './option-order.mjs?v=1.1.2';
 export const LT32_VERSION=2;
 export const LEADS=Object.freeze([
  {id:'positive',name:'Vermelho',color:'#ef6658',function:'Positivo da bateria',role:'positive',detail:'Alimentação de 9–90 VCC. Aqui: +12 V permanente com fusível de 2 A.'},

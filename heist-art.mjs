@@ -1,5 +1,5 @@
-import {drawStreetDetails} from './city-details.mjs?v=1.1.1';
-import {WORLD,BUILDINGS,TARGET,TOKENS,SPAWN} from './heist-core.mjs?v=1.1.1';
+import {drawStreetDetails} from './city-details.mjs?v=1.1.2';
+import {WORLD,BUILDINGS,TARGET,TOKENS,SPAWN} from './heist-core.mjs?v=1.1.2';
 const token=id=>TOKENS.find(t=>t.id===id);
 function box(c,x,y,w,h,r=4){c.beginPath();c.roundRect(x,y,w,h,r);c.fill();}
 function label(c,text,x,y,size=12,color='#d9d7bc'){c.fillStyle=color;c.font=`700 ${size}px system-ui,sans-serif`;c.textAlign='center';c.fillText(text,x,y);}

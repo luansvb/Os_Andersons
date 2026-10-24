@@ -319,6 +319,13 @@ body.reduce-motion *,body.reduce-motion *:before,body.reduce-motion *:after{anim
 .world-controls .drive-note{max-width:9.375rem;font-size:0.625rem}
 .screen-control-note{font-size:0.625rem}
 
+.decision-brief{padding:0.75rem 0.875rem;margin:0 0 0.875rem;background:#203335;border:0.0625rem solid #4c6760;border-left:0.1875rem solid #e6bf64;border-radius:0.375rem;color:#dce4d5;text-align:left;font-family:system-ui,sans-serif}
+.decision-brief>small{display:block;font-size:0.625rem;font-weight:700;letter-spacing:.06em;color:#e6bf64}
+.decision-brief>p{margin:0.4375rem 0 0;font-size:0.8125rem;line-height:1.6}
+.questions>.decision-brief{margin-top:0.75rem}
+.decision-brief{padding:0.75rem;margin-bottom:0.75rem}
+.decision-brief>p{font-size:0.875rem;line-height:1.55}
+.decision-brief>small{font-size:0.625rem}
 .character-face{display:inline-block;flex:none;width:3.25rem;height:3.25rem;border-radius:0.625rem;background-color:#17232b;background-size:200% 200%;background-repeat:no-repeat;border:0.0625rem solid #f4c35c66;vertical-align:middle;transition:transform .18s}
 .face-cat{background-image:url('./assets/cat-expressions.webp')}
 .face-bear{background-image:url('./assets/bear-expressions.webp')}

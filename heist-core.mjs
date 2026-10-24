@@ -1,6 +1,6 @@
-import {hitsRoadwork} from './city-details.mjs?v=1.1.1';
-import {moveScreenCar} from './screen-driving.mjs?v=1.1.1';
-import {hashCase,random} from './lt32-core.mjs?v=1.1.1';
+import {hitsRoadwork} from './city-details.mjs?v=1.1.2';
+import {moveScreenCar} from './screen-driving.mjs?v=1.1.2';
+import {hashCase,random} from './lt32-core.mjs?v=1.1.2';
 export const HEIST_VERSION=1;
 export const WORLD={width:2200,height:1480,roadX:[320,840,1360,1880],roadY:[270,730,1190],roadWidth:108};
 export const TARGET={x:1510,y:790,angle:0,color:'#64a1ad',model:'Ford Ka'};

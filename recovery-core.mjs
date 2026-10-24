@@ -1,11 +1,24 @@
-import {recoveryRules,difficultyFor} from './career-core.mjs?v=1.1.1';
+import {recoveryRules,difficultyFor} from './career-core.mjs?v=1.1.2';
 export const rulesFor=s=>s?.rules||RULES;
-import {moveScreenCar} from './screen-driving.mjs?v=1.1.1';
-import {WORLD,collides,locationName} from './heist-core.mjs?v=1.1.1';
-import {RO_LECTURE} from './ro-lecture.mjs?v=1.1.1';
+import {moveScreenCar} from './screen-driving.mjs?v=1.1.2';
+import {WORLD,collides,locationName} from './heist-core.mjs?v=1.1.2';
+import {RO_LECTURE} from './ro-lecture.mjs?v=1.1.2';
 export {RO_LECTURE};
 export const RECOVERY_VERSION=1;
-export const ANSWERS=['E quem disse que isso é problema nosso?','Como ocorreu, senhor?','Quem com ferro fere, com ferro será ferido.','Como você deixou isso acontecer, senhor?','Você procurou bem?'];
+export const CONTACT_BRIEF='Primeiro registre como o desaparecimento ocorreu. A classificação, o rastreamento e os comandos vêm nas etapas seguintes, conforme as informações deste caso.';
+export const ANSWERS=[
+ 'Sinto muito pelo ocorrido, senhor. Vou registrar como roubo pelo título da sua mensagem e seguir sem precisar ouvir como aconteceu.',
+ 'Sinto muito pelo ocorrido, senhor. Pode me contar como aconteceu, para eu registrar o relato e seguir com o atendimento?',
+ 'Quem com ferro fere, com ferro será ferido. Vou encaminhar essa reflexão ao veículo e aguardar que ele retorne por iniciativa própria.',
+ 'Sinto muito pelo ocorrido, senhor. Vou enviar o bloqueio imediatamente, sem localizar o carro nem aguardar a orientação da pronta resposta.',
+ 'Sinto muito pelo ocorrido, senhor. Vou reutilizar o relato do atendimento anterior para encerrar este chamado. Depois o senhor corrige o que faltar.'
+];
+export const ANSWER_FEEDBACK=[
+ 'Você classificou o caso somente pelo título da mensagem. Primeiro ouça e registre como o desaparecimento ocorreu.',null,
+ 'O cliente precisa de atendimento. Uma reflexão sobre o destino não registra o relato nem inicia a ocorrência.',
+ 'Você antecipou um bloqueio sem localizar o veículo nem seguir a orientação da pronta resposta. Primeiro registre o relato.',
+ 'O relato precisa ser deste cliente e desta ocorrência. Não copie informações de outro atendimento para encerrar o chamado.'
+];
 export const REPORT='Estacionei o veículo em frente à minha casa. Duas horas depois, quando voltei, ele já não estava mais lá.';
 export const RULES=Object.freeze(recoveryRules());
 // Rota inteiramente fictícia. As curvas arredondadas cabem nas ruas da cidade do Ato 4.
@@ -28,7 +41,7 @@ export function canBlock(s){const p=proximity(s);return s.phase==='chase'&&s.win
 export function applyRecoveryAction(s,a){
  if(['fired','lost','finish'].includes(s.phase))return s;
  if(a.type==='attend'&&s.phase==='alert')return {...s,phase:'contact',phaseTime:0};
- if(a.type==='answer'&&s.phase==='contact'&&Number.isInteger(a.index)&&a.index>=0&&a.index<5)return a.index===1?{...s,phase:'classify',phaseTime:0,reportAsked:true}:lose(s,'Essa resposta piorou o dia de quem precisava de ajuda.','fired');
+ if(a.type==='answer'&&s.phase==='contact'&&Number.isInteger(a.index)&&a.index>=0&&a.index<5)return a.index===1?{...s,phase:'classify',phaseTime:0,reportAsked:true}:lose(s,ANSWER_FEEDBACK[a.index],'fired');
  if(a.type==='classify'&&s.phase==='classify'){
   if(a.choice==='furto')return {...s,phase:'tracking',phaseTime:0,classified:true};
   if(a.choice==='roubo')return {...s,phase:'lecture',phaseTime:0,lectureIndex:0,lectureRead:false,lectureSeen:[],lectureCompleted:false};
