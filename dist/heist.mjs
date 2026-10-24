@@ -1,9 +1,9 @@
-import {ShiftSession,portrait as bossPortrait} from './shift-session.mjs?v=1.1.1';
-import {cityComment} from './city-details.mjs?v=1.1.1';
-import {designWidth} from './phone-layout.mjs?v=1.1.1';
-import {sampleScreenControls,tapMotion,screenPadMarkup,SCREEN_KEYS} from './screen-driving.mjs?v=1.1.1';
-import {createHeist,restoreHeist,applyHeistAction,advanceHeist,nearCar,locationName,TARGET,TOKENS,WORLD,BUILDINGS} from './heist-core.mjs?v=1.1.1';
-import {makeCity,drawCity,portrait,dashboard,puzzleSvg} from './heist-art.mjs?v=1.1.1';
+import {ShiftSession,portrait as bossPortrait} from './shift-session.mjs?v=1.1.2';
+import {cityComment} from './city-details.mjs?v=1.1.2';
+import {designWidth} from './phone-layout.mjs?v=1.1.2';
+import {sampleScreenControls,tapMotion,screenPadMarkup,SCREEN_KEYS} from './screen-driving.mjs?v=1.1.2';
+import {createHeist,restoreHeist,applyHeistAction,advanceHeist,nearCar,locationName,TARGET,TOKENS,WORLD,BUILDINGS} from './heist-core.mjs?v=1.1.2';
+import {makeCity,drawCity,portrait,dashboard,puzzleSvg} from './heist-art.mjs?v=1.1.2';
 const app=document.querySelector('#heist-app'),modal=document.querySelector('#heist-modal'),$=q=>document.querySelector(q),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let tap=null,turbo=false,desk=null;
 let state=null,context=null,city=null,canvas=null,frame=0,lastFrame=0,lastSaved=0,lastHud=0,keyDown=new Map(),padDown=new Map(),helpOpen=false,focusBefore=null,toastTimer=0,reportedFailure=false;

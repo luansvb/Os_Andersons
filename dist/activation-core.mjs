@@ -1,7 +1,7 @@
-import {difficultyFor,installationEffects} from './career-core.mjs?v=1.1.1';
-import {challengeFor,CHECK_STEPS} from './activation-checks.mjs?v=1.1.1';
+import {difficultyFor,installationEffects} from './career-core.mjs?v=1.1.2';
+import {challengeFor,CHECK_STEPS} from './activation-checks.mjs?v=1.1.2';
 export {challengeFor,CHECK_STEPS};
-import {hashCase,random} from './lt32-core.mjs?v=1.1.1';
+import {hashCase,random} from './lt32-core.mjs?v=1.1.2';
 export const ACTIVATION_VERSION=2;
 export const POSITION_DELAY=18000;
 export const ACTIVATION_STEPS=Object.freeze([
@@ -84,7 +84,7 @@ export function applyActivationAction(s,a){
   if(!/^\d{15}$/.test(String(a.value))||a.value!==s.imei)return fail(s,'O IMEI digitado não é o da etiqueta do equipamento. Um número errado já muda o aparelho inteiro, Anderson.');
   return {...s,imeiDraft:a.value,phase:'maze'};
  }
- if(a.type==='solve-check'){const check=challengeFor(s);if(!check||check.solved)return s;if(a.id!==check.correct)return fail(s,'A conferência não corresponde aos dados recebidos. '+check.instruction);return {...s,checks:[...(s.checks||[]),s.mazeStep]};}
+ if(a.type==='solve-check'){const check=challengeFor(s);if(!check||check.solved)return s;if(a.id!==check.correct)return fail(s,check.failureHint);return {...s,checks:[...(s.checks||[]),s.mazeStep]};}
  if(a.type==='workflow'){
   const task=taskFor(s);if(!task)return s;const check=challengeFor(s);if(check&&!check.solved)return s;
   if(a.id!==task.id)return fail(s,`A etapa pedia “${task.label}”. Você clicou em outra função e comprometeu a ativação.`);

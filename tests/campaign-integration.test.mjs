@@ -24,6 +24,17 @@ test('Atalhos numéricos seguem a ordem visível embaralhada e o atendimento ace
  }
  assert.ok(positions.size>1);
 });
+test('Orientação e motivo da demissão correspondem à escolha embaralhada e permanecem no checkpoint',async t=>{
+ for(const [number,question,phase,step] of [[0,core.INTRO[0],'intro',0],[1,core.INTRO[1],'intro',1],[2,core.FIELDS[1],'intake',1]]){
+  const saved={...checkpoint,caseId:'feedback-'+number,completed:false,phase,introStep:step,introReady:true,introPrompted:true,awaiting:null,intakeIndex:step,asked:{},intakeMessages:[],tab:'chat'},dom=fixture(t,saved,'normal'),w=dom.window,d=w.document;
+  d.querySelector('[data-action="continue"]').click();assert.equal(d.querySelector('.decision-brief p').textContent,question.brief);
+  const action=phase==='intro'?'intro-choice':'intake-choice',before=[...d.querySelectorAll(`[data-action="${action}"]`)].map(b=>b.textContent);
+  d.querySelector(`[data-action="${action}"][data-index="${number===0?1:0}"]`).click();await new Promise(resolve=>w.setTimeout(resolve,500));
+  assert.ok(d.querySelector('.failure-modal'));assert.ok(d.querySelector('#modal-root').textContent.includes(question.feedback[number===0?1:0]));
+  d.querySelector('[data-action="retry-checkpoint"]').click();assert.equal(d.querySelector('#modal-root').children.length,0);assert.equal(d.querySelector('.decision-brief p').textContent,question.brief);
+  assert.deepEqual([...d.querySelectorAll(`[data-action="${action}"]`)].map(b=>b.textContent),before);
+ }
+});
 test('Save concluído da versão anterior continua diretamente no Ato 2',t=>{
  const dom=fixture(t),d=dom.window.document;const continueButton=d.querySelector('[data-action="continue"]');assert.match(continueButton.textContent,/Continuar para a instalação/);continueButton.click();
  const frame=d.querySelector('#workshop-frame');assert.ok(frame);assert.match(frame.src,/lt32\.html\?mode=campaign/);const saved=JSON.parse(dom.window.localStorage.getItem('andersons-save-v1'));assert.equal(saved.phase,'workshop');assert.equal(saved.form.vehicle,'Ford Ka');assert.equal(saved.form.name,checkpoint.form.name);assert.ok(saved.caseId);

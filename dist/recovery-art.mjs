@@ -1,8 +1,8 @@
-import {drawStreetDetails} from './city-details.mjs?v=1.1.1';
-import {designWidth} from './phone-layout.mjs?v=1.1.1';
-import {WORLD,BUILDINGS} from './heist-core.mjs?v=1.1.1';
-import {makeCity,carSprite} from './heist-art.mjs?v=1.1.1';
-import {ROUTE,proximity} from './recovery-core.mjs?v=1.1.1';
+import {drawStreetDetails} from './city-details.mjs?v=1.1.2';
+import {designWidth} from './phone-layout.mjs?v=1.1.2';
+import {WORLD,BUILDINGS} from './heist-core.mjs?v=1.1.2';
+import {makeCity,carSprite} from './heist-art.mjs?v=1.1.2';
+import {ROUTE,proximity} from './recovery-core.mjs?v=1.1.2';
 export {makeCity};
 export function mapMarkup(id='tracking-map'){
  return `<svg id="${id}" class="tracking-svg" viewBox="0 0 ${WORLD.width} ${WORLD.height}" role="img" aria-label="Rastreamento ao vivo. Ford Ka em azul, viatura em dourado."><rect width="2200" height="1480" fill="#122e35"/><g fill="#355157">${BUILDINGS.map(b=>`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="14"/>`).join('')}</g><g stroke="#74908b55" stroke-width="65">${WORLD.roadX.map(x=>`<path d="M${x} 0V1480"/>`).join('')}${WORLD.roadY.map(y=>`<path d="M0 ${y}H2200"/>`).join('')}</g><path d="M${ROUTE.map(p=>`${p.x} ${p.y}`).join('L')}Z" fill="none" stroke="#6cbcc164" stroke-width="12" stroke-dasharray="20 24"/><g fill="#a7b8ad" font-family="monospace" font-size="32"><text x="1050" y="215">AV. NORTE</text><text x="910" y="690">R. DAS OFICINAS</text><text x="980" y="1275">AV. CENTRAL</text></g><g class="map-target"><circle r="78" fill="#77d1df25"/><circle r="36" fill="#87dae4" stroke="#e7fbeb" stroke-width="10"/><path class="target-heading" d="M0-65-20-100H20Z" fill="#87dae4"/><text x="70" y="15" font-size="43" font-family="system-ui" font-weight="800" fill="#e8f6e6">FORD KA</text></g><g class="map-patrol"><circle r="33" fill="#edc27f" stroke="#fff2c7" stroke-width="9"/><path d="M-18 22 0-38 18 22Z" fill="#263e42"/></g></svg>`;

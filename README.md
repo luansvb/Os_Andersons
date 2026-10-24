@@ -4,7 +4,17 @@
 
 Código-fonte do jogo completo, com os cinco atos, imagens, testes e oficina 3D de prática.
 
-Versão 1.1.1. Campanha individual completa de navegador. Ato 1: Agendamento. Ato 2: Instalação 2D do LT-32 PRO. Ato 3: Testes e ativação com Cat e Bear. Ato 4: O grande roubo, com Anderson, o ladrão. Ato 5: Atuação anti furto com Rô, atendimento, rastreamento e perseguição final. O simulador LCV5 continua disponível separadamente para prática em 3D.
+Versão 1.1.2. Campanha individual completa de navegador. Ato 1: Agendamento. Ato 2: Instalação 2D do LT-32 PRO. Ato 3: Testes e ativação com Cat e Bear. Ato 4: O grande roubo, com Anderson, o ladrão. Ato 5: Atuação anti furto com Rô, atendimento, rastreamento e perseguição final. O simulador LCV5 continua disponível separadamente para prática em 3D.
+
+## Melhoria por partes: escolhas de atendimento — versão 1.1.2
+
+Primeira entrega da sequência de melhorias: alternativas mais convincentes. As duas decisões iniciais, as três perguntas do cadastro e o atendimento anti furto agora misturam respostas profissionais com erros de procedimento e uma alternativa de humor. Os textos têm comprimentos próximos; o tamanho da resposta deixa de destacar a correta.
+
+Cada decisão mostra uma orientação do setor antes das alternativas. Erros incluem confirmar uma agenda antes de ouvir o cliente, liberar acesso antes dos testes, prometer bloqueio automático, preencher só parte dos dados e reaproveitar outro atendimento. Uma coincidência no nome, modelo ou horário não torna correto presumir esses dados.
+
+A demissão explica o erro da alternativa escolhida. Essa explicação e o embaralhamento continuam compatíveis com os checkpoints. As conferências da ativação também explicam o dado divergente; o cadastro duplicado mostra três IMEIs com o mesmo tipo de rótulo, exigindo comparar os números com a etiqueta.
+
+A atualização mantém os mesmos estados e índices internos das respostas, preservando os saves. Novos problemas de diagnóstico na ativação ficam para a próxima parte. Validação: build estático e 96 testes automatizados, incluindo orientação, motivo de demissão e retomada da mesma pergunta.
 
 ## Alternativas embaralhadas — versão 1.1.1
 
@@ -60,7 +70,7 @@ Abra `http://localhost:8080`. `dist/` é a raiz estática para publicação. Nã
 19. Uma ligação errada dispara o alarme; uma viatura chega e Anderson é preso, dando game over.
 20. Três circuitos corretos permitem ligar o motor e dirigir na direção das setas da tela, com freio separado e Turbo opcional até sair da tela. O ato termina com “E aí…” e permite continuar para a atuação anti furto.
 
-21. Um alerta “FUI ROUBADO” inicia o atendimento. Só “Como ocorreu, senhor?” prossegue.
+21. Um alerta “FUI ROUBADO” inicia o atendimento. A resposta que acolhe o cliente e pergunta como aconteceu prossegue.
 22. O relato do cliente pede a classificação furto. Escolher roubo exige acompanhar 28 páginas da bronca da Rô, sem demissão, antes de voltar à pergunta.
 23. O jogador abre o rastreamento, copia a localização do Ka em movimento e a envia para Pronta resposta.
 24. Assume a viatura e acompanha o Ford Ka pela cidade. Na dificuldade Efetivado, a aproximação precisa ficar estável por 2,2 segundos antes de abrir uma janela de 1,5 segundo para enviar BLOQUEAR. A conferência da antena no Ato 2 pode acrescentar 0,35 segundo.
@@ -110,7 +120,7 @@ A proibição do painel é uma regra de roteiro solicitada pelo autor e aparece 
 
 ## Verificação
 
-94 testes automatizados cobrem roteiro, datas, proximidade, compatibilidade com saves antigos, isolamento dos modos, validação de mensagens, locais permitidos, todas as combinações de ligação do LT-32 PRO, ocultação, sequência de fechamento, entrega, retomada IMEI, 20 validações, comandos, espera por GPS, contatos e conteúdo das mensagens, liberação de acesso, movimento automático regras de movimento/colisão/caminhos, partida arcade, prisão, direção, saída de cena, compatibilidade do Ato 3 concluído com o Ato 4 a capacitação de 28 páginas, localização atualizada, perseguição final, bloqueios, prazo e regressões da oficina LCV5.
+96 testes automatizados cobrem roteiro, datas, proximidade, compatibilidade com saves antigos, isolamento dos modos, validação de mensagens, locais permitidos, todas as combinações de ligação do LT-32 PRO, ocultação, sequência de fechamento, entrega, retomada IMEI, 20 validações, comandos, espera por GPS, contatos e conteúdo das mensagens, liberação de acesso, movimento automático regras de movimento/colisão/caminhos, partida arcade, prisão, direção, saída de cena, compatibilidade do Ato 3 concluído com o Ato 4 a capacitação de 28 páginas, localização atualizada, perseguição final, bloqueios, prazo e regressões da oficina LCV5.
 
 Validação visual da versão 0.5: carro 2D, escolha do painel com explosão e fala da Cat; instalação completa por controles até a confirmação de entrega. O Ato 3 foi percorrido até a conclusão, incluindo os envios aos contatos corretos e o movimento automático. O Ato 4 também foi concluído por teclado e por controles de toque, e a ligação errada foi testada até a prisão. Os registros em `docs/lt32-pro.md`, `docs/ativacao.md` e `docs/grande-roubo.md` detalham as verificações. Testes em aparelhos físicos não foram realizados.
 

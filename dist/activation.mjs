@@ -1,10 +1,10 @@
-import {shuffleOptions} from './option-order.mjs?v=1.1.1';
-import {ShiftSession,portrait} from './shift-session.mjs?v=1.1.1';
-import {challengeFor} from './activation-checks.mjs?v=1.1.1';
-import {installationEffects,reactiveLine} from './career-core.mjs?v=1.1.1';
-import {createActivation,restoreActivation,applyActivationAction,advanceActivation,taskFor,buttonsFor,COMMANDS,PRESSURE,PRESSURE_INTERVAL,BEAR_LINES,locationText,credentialsText,POSITION_DELAY} from './activation-core.mjs?v=1.1.1';
-import {equipmentPhoto,installationPhoto,mapSvg,vehiclePoint,phaseName} from './activation-visuals.mjs?v=1.1.1';
-import {LOCATIONS} from './lt32-core.mjs?v=1.1.1';
+import {shuffleOptions} from './option-order.mjs?v=1.1.2';
+import {ShiftSession,portrait} from './shift-session.mjs?v=1.1.2';
+import {challengeFor} from './activation-checks.mjs?v=1.1.2';
+import {installationEffects,reactiveLine} from './career-core.mjs?v=1.1.2';
+import {createActivation,restoreActivation,applyActivationAction,advanceActivation,taskFor,buttonsFor,COMMANDS,PRESSURE,PRESSURE_INTERVAL,BEAR_LINES,locationText,credentialsText,POSITION_DELAY} from './activation-core.mjs?v=1.1.2';
+import {equipmentPhoto,installationPhoto,mapSvg,vehiclePoint,phaseName} from './activation-visuals.mjs?v=1.1.2';
+import {LOCATIONS} from './lt32-core.mjs?v=1.1.2';
 const app=document.querySelector('#activation-app'),modal=document.querySelector('#activation-modal');
 const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let desk=null,state=null,context=null,selectedCommand=null,tickId=0,lastTick=0,seen=0,lastPressure=0,toastTimer=0,noticeTimer=0,failureTimer=0,focusBefore=null;

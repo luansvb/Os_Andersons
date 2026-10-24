@@ -1,4 +1,4 @@
-export const RELEASE='1.1.1';
+export const RELEASE='1.1.2';
 export const ACT_NAMES=['Agendamento','Instalação','Ativação','O grande roubo','Atuação anti furto'];
 export const DIFFICULTIES=Object.freeze([
  {id:'training',name:'Estagiário',description:'Mais tempo, dicas e checkpoints.',checkpoints:true,patienceMs:100000,notificationMs:6500,choices:5,mapSpeed:.7,deadline:100,window:3.2,hold:1.6},
