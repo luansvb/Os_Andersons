@@ -1,7 +1,8 @@
-import {designWidth} from './phone-layout.mjs?v=1.0.2';
-import {WORLD,BUILDINGS} from './heist-core.mjs';
-import {makeCity,carSprite} from './heist-art.mjs';
-import {ROUTE,proximity} from './recovery-core.mjs';
+import {drawStreetDetails} from './city-details.mjs?v=1.1.0';
+import {designWidth} from './phone-layout.mjs?v=1.1.0';
+import {WORLD,BUILDINGS} from './heist-core.mjs?v=1.1.0';
+import {makeCity,carSprite} from './heist-art.mjs?v=1.1.0';
+import {ROUTE,proximity} from './recovery-core.mjs?v=1.1.0';
 export {makeCity};
 export function mapMarkup(id='tracking-map'){
  return `<svg id="${id}" class="tracking-svg" viewBox="0 0 ${WORLD.width} ${WORLD.height}" role="img" aria-label="Rastreamento ao vivo. Ford Ka em azul, viatura em dourado."><rect width="2200" height="1480" fill="#122e35"/><g fill="#355157">${BUILDINGS.map(b=>`<rect x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}" rx="14"/>`).join('')}</g><g stroke="#74908b55" stroke-width="65">${WORLD.roadX.map(x=>`<path d="M${x} 0V1480"/>`).join('')}${WORLD.roadY.map(y=>`<path d="M0 ${y}H2200"/>`).join('')}</g><path d="M${ROUTE.map(p=>`${p.x} ${p.y}`).join('L')}Z" fill="none" stroke="#6cbcc164" stroke-width="12" stroke-dasharray="20 24"/><g fill="#a7b8ad" font-family="monospace" font-size="32"><text x="1050" y="215">AV. NORTE</text><text x="910" y="690">R. DAS OFICINAS</text><text x="980" y="1275">AV. CENTRAL</text></g><g class="map-target"><circle r="78" fill="#77d1df25"/><circle r="36" fill="#87dae4" stroke="#e7fbeb" stroke-width="10"/><path class="target-heading" d="M0-65-20-100H20Z" fill="#87dae4"/><text x="70" y="15" font-size="43" font-family="system-ui" font-weight="800" fill="#e8f6e6">FORD KA</text></g><g class="map-patrol"><circle r="33" fill="#edc27f" stroke="#fff2c7" stroke-width="9"/><path d="M-18 22 0-38 18 22Z" fill="#263e42"/></g></svg>`;
@@ -10,7 +11,7 @@ export function updateMap(root,s){for(const map of root.querySelectorAll('.track
 export function drawChase(canvas,city,s,prefs={}){
  const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;const dpr=Math.min(devicePixelRatio||1,2),pw=Math.round(rect.width*dpr),ph=Math.round(rect.height*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
  const c=canvas.getContext('2d'),w=designWidth(canvas)<600?650:1000,h=w*rect.height/rect.width,p=s.patrol||s.target,focus={x:p.x+Math.cos(p.angle)*80,y:p.y+Math.sin(p.angle)*80},camera={x:Math.max(0,Math.min(WORLD.width-w,focus.x-w/2)),y:Math.max(-50,Math.min(WORLD.height-h+50,focus.y-h*.55))},scale=rect.width/w;
- c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#142a31';c.fillRect(0,0,rect.width,rect.height);c.scale(scale,scale);c.translate(-camera.x,-camera.y);c.drawImage(city,0,0);
+ c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#142a31';c.fillRect(0,0,rect.width,rect.height);c.scale(scale,scale);c.translate(-camera.x,-camera.y);c.drawImage(city,0,0);drawStreetDetails(c,prefs.reduceMotion?0:s.elapsed);
  // Uma trilha curta ajuda a ler a direção, sem dirigir pelo jogador.
  c.strokeStyle='#8dd4dd70';c.lineWidth=3;c.setLineDash([7,11]);c.beginPath();c.moveTo(s.target.x-Math.cos(s.target.angle)*100,s.target.y-Math.sin(s.target.angle)*100);c.lineTo(s.target.x,s.target.y);c.stroke();c.setLineDash([]);
  const hot=s.windowLeft!==null&&s.phase==='chase';c.strokeStyle=hot?'#b9ed98':'#89d9e5';c.lineWidth=hot?5:2;c.beginPath();c.arc(s.target.x,s.target.y,47+(hot&&!prefs.reduceMotion?Math.sin(s.elapsed*5)*3:0),0,Math.PI*2);c.stroke();

@@ -4,7 +4,19 @@
 
 Código-fonte do jogo completo, com os cinco atos, imagens, testes e oficina 3D de prática.
 
-Versão 1.0.2. Campanha individual completa de navegador. Ato 1: Agendamento. Ato 2: Instalação 2D do LT-32 PRO. Ato 3: Testes e ativação com Cat e Bear. Ato 4: O grande roubo, com Anderson, o ladrão. Ato 5: Atuação anti furto com Rô, atendimento, rastreamento e perseguição final. O simulador LCV5 continua disponível separadamente para prática em 3D.
+Versão 1.1.0. Campanha individual completa de navegador. Ato 1: Agendamento. Ato 2: Instalação 2D do LT-32 PRO. Ato 3: Testes e ativação com Cat e Bear. Ato 4: O grande roubo, com Anderson, o ladrão. Ato 5: Atuação anti furto com Rô, atendimento, rastreamento e perseguição final. O simulador LCV5 continua disponível separadamente para prática em 3D.
+
+## Novidades da versão 1.1
+
+- Três dificuldades: Estagiário, Efetivado e Contrato de experiência. As duas primeiras oferecem checkpoints; a última preserva a regra de perder a campanha ao errar.
+- A instalação acompanha o Ford Ka pelos atos seguintes: esconderijo, organização e antena mudam o diálogo, o tempo de GPS e a janela do bloqueio.
+- Medidor de paciência, falas reativas, expressões de Cat, Bear e Rô e trilha original procedural com controle de som.
+- Clientes com horários diferentes, mensagens fragmentadas, correções e respostas em áudio com transcrição. A voz usa a síntese do navegador quando disponível.
+- Cinco conferências de dados dentro das 20 etapas da ativação: modelo, veículo, dois testes e cadastro duplicado.
+- Cidade com detalhes cômicos, obras e ambientação; perseguição com avisos de aproximação e controles para os dois polegares.
+- Relatório por ato, notas, tempo, erros, retomadas, colisões, conquistas permanentes e finais conforme o desempenho, incluindo uma cena extra.
+
+Os recordes e conquistas ficam neste navegador, sem conta ou sincronização. Para experimentar todas as variações e escolher a dificuldade, comece um novo expediente. Veja as regras e a validação em [docs/atualizacao-1-1.md](docs/atualizacao-1-1.md).
 
 ## Executar e validar
 
@@ -23,7 +35,7 @@ Abra `http://localhost:8080`. `dist/` é a raiz estática para publicação. Nã
 2. Respostas corretas de apresentação e explicação: 1 e 4.
 3. Seis técnicos e o cliente percorrem o mapa. A seleção considera a distância no instante do clique, aceitando empates exatos.
 4. Cadastro: perguntas corretas 3, 5 e 4. As respostas são copiadas e coladas na ficha.
-5. Confirmação: amanhã, ao meio-dia, a partir do início da partida em America/Sao_Paulo.
+5. Confirmação: amanhã, às 10h, 12h ou 14h, conforme a última mensagem do cliente, a partir do início da partida em America/Sao_Paulo.
 6. A conclusão do Ato 1 oferece continuar com o mesmo cliente e veículo para a instalação do LT-32 PRO.
 7. O carro aparece aberto em uma ilustração 2D. O jogador escolhe um local discreto; o painel está expressamente proibido pela Cat.
 8. Doze cabos embaralhados formam um emaranhado. O jogador traça ou examina os cabos e conecta quatro funções ao chicote do rastreador, por cliques/toques ou arraste.
@@ -43,15 +55,18 @@ Abra `http://localhost:8080`. `dist/` é a raiz estática para publicação. Nã
 21. Um alerta “FUI ROUBADO” inicia o atendimento. Só “Como ocorreu, senhor?” prossegue.
 22. O relato do cliente pede a classificação furto. Escolher roubo exige acompanhar 28 páginas da bronca da Rô, sem demissão, antes de voltar à pergunta.
 23. O jogador abre o rastreamento, copia a localização do Ka em movimento e a envia para Pronta resposta.
-24. Assume a viatura e acompanha o Ford Ka pela cidade. A aproximação precisa ficar estável por 2,2 segundos antes de abrir uma janela única de 1,5 segundo para enviar BLOQUEAR.
+24. Assume a viatura e acompanha o Ford Ka pela cidade. Na dificuldade Efetivado, a aproximação precisa ficar estável por 2,2 segundos antes de abrir uma janela de 1,5 segundo para enviar BLOQUEAR. A conferência da antena no Ato 2 pode acrescentar 0,35 segundo.
 25. Bloqueio correto recupera o veículo. Antecipação, atraso ou fim do prazo de 70 segundos dão game over. A Rô permanece visível guiando a operação.
 
-Uma ação incorreta de instalação causa uma explosão desenhada, seguida da Cat dizendo “MEU DEUS...! ESTÁ DEMITIDO”. A partida volta ao início. Examinar cabos e alternar os preparativos de ocultação não são erros; a avaliação ocorre ao conectar, esconder, fechar ou entregar.
+Uma ação incorreta de instalação causa uma explosão desenhada, seguida da Cat dizendo “MEU DEUS...! ESTÁ DEMITIDO”. Nos modos Estagiário e Efetivado, o jogador pode retomar o checkpoint. Contrato de experiência encerra a campanha após uma falha. Examinar cabos e alternar os preparativos de ocultação não são erros; a avaliação ocorre ao conectar, esconder, fechar ou entregar.
 
 O menu também oferece instalação 2D isolada, ativação isolada, O grande roubo isolado, Atuação anti furto isolada e prática 3D do LCV5. Essas opções preservam o save da campanha. Saves concluídos do Ato 1 em versões anteriores podem continuar diretamente para o novo Ato 2. A prática 3D mantém sua recepção, acessórios, chicotes, possibilidade de reparo e teste de rua.
 
 ## Estrutura
 
+- `dist/career-core.mjs`, `dist/shift-session.mjs`, `dist/shift.css`: dificuldades, checkpoints, métricas, chefia, expressões, áudio, conquistas e avaliação.
+- `dist/activation-checks.mjs`: as cinco conferências de dados.
+- `dist/city-details.mjs`: obras e detalhes da cidade.
 - `dist/core.mjs`: roteiro e regras do Ato 1.
 - `dist/app.mjs`: campanha, menus, cliente, saves e integração dos minigames.
 - `dist/lt32-core.mjs`: regras, cabos por partida e retomada da instalação 2D.
@@ -77,7 +92,7 @@ O menu também oferece instalação 2D isolada, ativação isolada, O grande rou
 
 A campanha, a instalação 2D e a prática 3D usam saves locais separados. O LT-32 PRO preserva etapa, posição, ligações, orientação, fixação e peças abertas. As letras e cores dos cabos do veículo são estáveis dentro da partida e variam entre partidas; a identidade do cliente impede recuperar outra montagem.
 
-Os minigames usam frames da mesma origem. A troca de mensagens valida origem e janela emissora. Erros da instalação na campanha apagam o progresso dessa partida; erros no modo 2D isolado preservam a campanha. Não há dependência de login do LCV5, Firebase, DMP, WhatsApp, Ciasat ou equipamento físico. Os dados do cliente e o veículo do jogo são fictícios. Não há sincronização entre aparelhos.
+Os minigames usam frames da mesma origem. A troca de mensagens valida origem e janela emissora. Erros permitem retomar a etapa nos perfis Estagiário e Efetivado; Contrato de experiência apaga o progresso da campanha. Erros no modo 2D isolado preservam a campanha. Não há dependência de login do LCV5, Firebase, DMP, WhatsApp, Ciasat ou equipamento físico. Os dados do cliente e o veículo do jogo são fictícios. Não há sincronização entre aparelhos.
 
 ## Referência do LT-32 PRO
 
@@ -87,13 +102,13 @@ A proibição do painel é uma regra de roteiro solicitada pelo autor e aparece 
 
 ## Verificação
 
-75 testes automatizados cobrem roteiro, datas, proximidade, compatibilidade com saves antigos, isolamento dos modos, validação de mensagens, locais permitidos, todas as combinações de ligação do LT-32 PRO, ocultação, sequência de fechamento, entrega, retomada IMEI, 20 validações, comandos, espera por GPS, contatos e conteúdo das mensagens, liberação de acesso, movimento automático regras de movimento/colisão/caminhos, partida arcade, prisão, direção, saída de cena, compatibilidade do Ato 3 concluído com o Ato 4 a capacitação de 28 páginas, localização atualizada, perseguição final, bloqueios, prazo e regressões da oficina LCV5.
+88 testes automatizados cobrem roteiro, datas, proximidade, compatibilidade com saves antigos, isolamento dos modos, validação de mensagens, locais permitidos, todas as combinações de ligação do LT-32 PRO, ocultação, sequência de fechamento, entrega, retomada IMEI, 20 validações, comandos, espera por GPS, contatos e conteúdo das mensagens, liberação de acesso, movimento automático regras de movimento/colisão/caminhos, partida arcade, prisão, direção, saída de cena, compatibilidade do Ato 3 concluído com o Ato 4 a capacitação de 28 páginas, localização atualizada, perseguição final, bloqueios, prazo e regressões da oficina LCV5.
 
 Validação visual da versão 0.5: carro 2D, escolha do painel com explosão e fala da Cat; instalação completa por controles até a confirmação de entrega. O Ato 3 foi percorrido até a conclusão, incluindo os envios aos contatos corretos e o movimento automático. O Ato 4 também foi concluído por teclado e por controles de toque, e a ligação errada foi testada até a prisão. Os registros em `docs/lt32-pro.md`, `docs/ativacao.md` e `docs/grande-roubo.md` detalham as verificações. Testes em aparelhos físicos não foram realizados.
 
 ## Recursos visuais
 
-A Cat e a Rô usam as imagens originais fornecidas por Luan. Bear foi editado a partir do retrato fornecido para remover o tufo no topo da cabeça e deixá-lo careca; arte, prompt e validação em `docs/ativacao.md`. O logo inicial foi gerado para o projeto com a ferramenta integrada de imagens. O carro, o LT-32 PRO estilizado, o emaranhado e a explosão 2D são SVGs do próprio código. A instalação mantém a paleta escura, creme e amarela da campanha.
+Cat, Bear e Rô têm quatro expressões derivadas dos retratos de Luan. Os atlas publicados usam WebP e os originais ficam em `docs/art-source/`; prompts e caminhos em `docs/expressoes-personagens.md`. Bear foi editado a partir do retrato fornecido para remover o tufo no topo da cabeça e deixá-lo careca; arte, prompt e validação em `docs/ativacao.md`. O logo inicial foi gerado para o projeto com a ferramenta integrada de imagens. O carro, o LT-32 PRO estilizado, o emaranhado e a explosão 2D são SVGs do próprio código. A instalação mantém a paleta escura, creme e amarela da campanha.
 
 ## Ativação e dados fictícios
 
@@ -107,7 +122,7 @@ Na versão 0.5, as cobranças do técnico chegam a cada 3,5 segundos, com uma fa
 
 O Ato 4 usa uma cidade original em Canvas 2D, com construções, pedestres e carros de ambientação. O personagem e o veículo colidem com prédios. O clique/toque em uma rua calcula um caminho acessível, e o jogador pode interrompê-lo com os controles manuais. A câmera acompanha a caminhada e mantém a cena da fuga; o carro precisa sair desse enquadramento para concluir. O puzzle usa símbolos inteiramente fictícios de um módulo arcade.
 
-Os saves do Ato 3 já concluído continuam para o Ato 4. A campanha guarda posição do personagem e do carro, etapa, ligações e enquadramento da fuga. A prisão encerra a partida da campanha; no modo isolado, o save da campanha continua preservado. A simulação pausa com a página oculta ou os controles/ajuda abertos. Não houve alteração no simulador 3D de prática.
+Os saves do Ato 3 já concluído continuam para o Ato 4. A campanha guarda posição do personagem e do carro, etapa, ligações e enquadramento da fuga. A prisão permite retomar o checkpoint nos dois primeiros perfis e encerra a campanha no Contrato de experiência; no modo isolado, o save da campanha continua preservado. A simulação pausa com a página oculta ou os controles/ajuda abertos. Não houve alteração no simulador 3D de prática.
 
 
 ## Atuação anti furto

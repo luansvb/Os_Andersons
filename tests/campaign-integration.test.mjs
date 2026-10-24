@@ -1,12 +1,15 @@
+import {installShift} from './ui-shift-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 import * as core from '../dist/core.mjs';
+import {makeClient} from '../dist/career-core.mjs';
 const html=await readFile(new URL('../dist/index.html',import.meta.url),'utf8');
-const script=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/,'const {INTRO,FIELDS,SAVE_VERSION,validateField,nearestIds,saoPauloDate,addDays,isCorrectBooking,routePosition}=window.testCore;\n');
+const script=(await readFile(new URL('../dist/app.mjs',import.meta.url),'utf8')).replace(/^import[^\n]+\n/gm,'');
+const appPreamble='const {INTRO,FIELDS,SAVE_VERSION,validateField,nearestIds,saoPauloDate,addDays,isCorrectBooking,routePosition}=window.testCore;const {createJourney,restoreJourney,mergeMetrics,difficultyFor,makeClient,installationSummary}=window.testCareer;const {ShiftSession,portrait,difficultyMarkup,recordsMarkup,rememberReport}=window.testShift;\n';
 const checkpoint={version:1,phase:'success',completed:true,baseDate:'2026-10-23',messages:[],tech:2,form:{name:'Anderson da Silva Anderson',vehicle:'Ford Ka',availability:'Para amanhã, meio dia.'}};
-function fixture(t,saved=checkpoint){const dom=new JSDOM(html,{url:'https://game.test/',runScripts:'outside-only',pretendToBeVisual:true});t.after(()=>dom.window.close());dom.window.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});dom.window.scrollTo=()=>{};dom.window.testCore=core;dom.window.localStorage.setItem('andersons-save-v1',JSON.stringify(saved));dom.window.eval(script);return dom;}
+function fixture(t,saved=checkpoint,difficulty='probation'){const dom=new JSDOM(html,{url:'https://game.test/',runScripts:'outside-only',pretendToBeVisual:true});t.after(()=>dom.window.close());dom.window.matchMedia=()=>({matches:false,addEventListener(){},removeEventListener(){}});dom.window.scrollTo=()=>{};dom.window.testCore=core;installShift(dom.window);dom.window.localStorage.setItem('andersons-prefs-v1',JSON.stringify({difficulty,sound:true}));dom.window.localStorage.setItem('andersons-save-v1',JSON.stringify(saved));dom.window.eval(appPreamble+script);return dom;}
 test('Save concluído da versão anterior continua diretamente no Ato 2',t=>{
  const dom=fixture(t),d=dom.window.document;const continueButton=d.querySelector('[data-action="continue"]');assert.match(continueButton.textContent,/Continuar para a instalação/);continueButton.click();
  const frame=d.querySelector('#workshop-frame');assert.ok(frame);assert.match(frame.src,/lt32\.html\?mode=campaign/);const saved=JSON.parse(dom.window.localStorage.getItem('andersons-save-v1'));assert.equal(saved.phase,'workshop');assert.equal(saved.form.vehicle,'Ford Ka');assert.equal(saved.form.name,checkpoint.form.name);assert.ok(saved.caseId);
@@ -70,4 +73,31 @@ test('Repetir o desafio após a vitória abre uma partida isolada e preserva a c
 });
 test('Preferência de som é encaminhada ao frame do Ato 5',t=>{
  const dom=fixture(t),w=dom.window,d=w.document;d.querySelector('[data-action="recovery-solo"]').click();const frame=d.querySelector('#workshop-frame'),received=[];frame.contentWindow.postMessage=data=>received.push(data);w.dispatchEvent(new w.MessageEvent('message',{origin:'https://game.test',source:frame.contentWindow,data:{type:'andersons-recovery',event:'sound'}}));assert.equal(received.length,1);assert.equal(received[0].type,'andersons-context');assert.equal(received[0].payload.prefs.sound,false);
+});
+
+test('Efetivado conserva os atos anteriores após demissão e só aceita conclusão depois do retry do próprio frame',t=>{
+ const dom=fixture(t,checkpoint,'normal'),w=dom.window,d=w.document;d.querySelector('[data-action="continue"]').click();const frame=d.querySelector('#workshop-frame');
+ const send=(event,payload={},source=frame.contentWindow)=>w.dispatchEvent(new w.MessageEvent('message',{origin:'https://game.test',source,data:{type:'andersons-workshop',event,payload}}));
+ send('failed',{phase:'explosion'});assert.ok(w.localStorage.getItem('andersons-save-v1'));
+ send('complete',{phase:'finish'});assert.equal(JSON.parse(w.localStorage.getItem('andersons-save-v1')).workshopCompleted,undefined);
+ send('retry',{phase:'wiring'},w);send('complete',{phase:'finish'});assert.equal(JSON.parse(w.localStorage.getItem('andersons-save-v1')).workshopCompleted,undefined);
+ send('retry',{phase:'wiring'});send('complete',{phase:'finish'});assert.equal(JSON.parse(w.localStorage.getItem('andersons-save-v1')).workshopCompleted,true);
+});
+
+test('Horário corrigido pelo cliente e checkpoint do calendário funcionam pela interface e contam a retomada',t=>{
+ const customer=Array.from({length:10},(_,i)=>makeClient('custom-'+i)).find(c=>c.variant===1);
+ const saved={...checkpoint,phase:'calendar',completed:false,caseId:'calendar-retry',intakeMessages:[],customer,form:{name:customer.name,vehicle:customer.vehicle,availability:customer.availability}};
+ const dom=fixture(t,saved,'normal'),w=dom.window,d=w.document;d.querySelector('[data-action="continue"]').click();
+ const tomorrow=core.addDays(saved.baseDate,1);d.querySelector(`[data-date="${tomorrow}"]`).click();d.querySelector('[data-time="12:00"]').click();d.querySelector('[data-action="confirm-booking"]').click();assert.match(d.querySelector('#modal-root').textContent,/14 horas/);
+ d.querySelector('[data-action="booking-fail"]').click();assert.ok(d.querySelector('[data-action="retry-checkpoint"]'));d.querySelector('[data-action="retry-checkpoint"]').click();
+ d.querySelector('[data-time="14:00"]').click();d.querySelector('[data-action="confirm-booking"]').click();const final=JSON.parse(w.localStorage.getItem('andersons-save-v1'));
+ assert.equal(final.phase,'success');assert.equal(final.journey.acts[1].errors,1);assert.equal(final.journey.acts[1].retries,1);assert.equal(final.customer.time,'14:00');
+});
+
+test('A instalação repassa ocultação e qualidade de sinal para o contexto dos atos seguintes',t=>{
+ const dom=fixture(t,checkpoint,'normal'),w=dom.window,d=w.document;d.querySelector('[data-action="continue"]').click();let frame=d.querySelector('#workshop-frame');
+ const send=(event,payload)=>w.dispatchEvent(new w.MessageEvent('message',{origin:'https://game.test',source:frame.contentWindow,data:{type:'andersons-workshop',event,payload}}));
+ send('installation',{location:'rear-trim',tidy:true,signalChecked:true});send('complete',{phase:'finish',installationLocation:'rear-trim'});send('activate',{installationLocation:'rear-trim'});frame=d.querySelector('#workshop-frame');const received=[];frame.contentWindow.postMessage=x=>received.push(x);
+ w.dispatchEvent(new w.MessageEvent('message',{origin:'https://game.test',source:frame.contentWindow,data:{type:'andersons-activation',event:'ready'}}));
+ assert.equal(received[0].payload.installation.location,'rear-trim');assert.equal(received[0].payload.installation.signal,100);assert.equal(received[0].payload.journey.installation.quality,100);
 });

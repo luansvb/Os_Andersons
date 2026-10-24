@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createActivation,applyActivationAction as action,advanceActivation as advance,buttonsFor,taskFor,ACTIVATION_STEPS,ACCESS_STEPS,POSITION_DELAY,PRESSURE_INTERVAL,PRESSURE,BEAR_LINES,locationText,credentialsText,restoreActivation} from '../dist/activation-core.mjs';
+import {createActivation,applyActivationAction as action,advanceActivation as advance,buttonsFor,taskFor,ACTIVATION_STEPS,ACCESS_STEPS,challengeFor,POSITION_DELAY,PRESSURE_INTERVAL,PRESSURE,BEAR_LINES,locationText,credentialsText,restoreActivation} from '../dist/activation-core.mjs';
 import {vehiclePoint} from '../dist/activation-visuals.mjs';
 const fresh=()=>createActivation('activation-case',{client:'Anderson da Silva Anderson',vehicle:'Ford Ka',installationLocation:'rear-trim'});
 function maze(){const s=fresh();return action(s,{type:'imei',value:s.imei});}
-function platform(){let s=maze();for(let i=0;i<20;i++)s=action(s,{type:'workflow',id:taskFor(s).id});return s;}
+function platform(){let s=maze();for(let i=0;i<20;i++){const check=challengeFor(s);if(check&&!check.solved)s=action(s,{type:'solve-check',id:check.correct});s=action(s,{type:'workflow',id:taskFor(s).id});}return s;}
 function positioned(){return advance(action(platform(),{type:'command',id:'position'}),POSITION_DELAY);}
 function handoff(){let s=action(positioned(),{type:'copy-location'});return action(s,{type:'send',target:'tech',value:locationText(s)});}
 function credentials(){let s=handoff();for(let i=0;i<6;i++)s=action(s,{type:'workflow',id:taskFor(s).id});return s;}
@@ -12,7 +12,7 @@ test('IMEI tem 15 dígitos estáveis por partida; qualquer dígito diferente dem
  const s=fresh();assert.match(s.imei,/^\d{15}$/);assert.equal(s.imei,fresh().imei);assert.notEqual(s.imei,createActivation('another').imei);assert.equal(action(s,{type:'imei',value:s.imei}).phase,'maze');assert.equal(action(s,{type:'imei',value:s.imei.slice(0,14)}).phase,'failed');assert.equal(action(s,{type:'imei',value:'0'+s.imei.slice(1)}).phase,'failed');
 });
 test('São 20 telas, com uma única ação correta e sete distrações em cada uma',()=>{
- let s=maze();assert.equal(ACTIVATION_STEPS.length,20);for(let i=0;i<20;i++){const task=taskFor(s),buttons=buttonsFor(s);assert.equal(buttons.length,8);assert.equal(buttons.filter(b=>b.id===task.id).length,1);for(const wrong of buttons.filter(b=>b.id!==task.id))assert.equal(action(s,{type:'workflow',id:wrong.id}).phase,'failed');s=action(s,{type:'workflow',id:task.id});assert.equal(s.mazeStep,i+1);}assert.equal(s.phase,'platform');
+ let s=maze();assert.equal(ACTIVATION_STEPS.length,20);for(let i=0;i<20;i++){const check=challengeFor(s);if(check&&!check.solved)s=action(s,{type:'solve-check',id:check.correct});const task=taskFor(s),buttons=buttonsFor(s);assert.equal(buttons.length,8);assert.equal(buttons.filter(b=>b.id===task.id).length,1);for(const wrong of buttons.filter(b=>b.id!==task.id))assert.equal(action(s,{type:'workflow',id:wrong.id}).phase,'failed');s=action(s,{type:'workflow',id:task.id});assert.equal(s.mazeStep,i+1);}assert.equal(s.phase,'platform');
 });
 test('Botões ficam estáveis durante notificações e mudam entre etapas e partidas',()=>{
  const s=maze();assert.deepEqual(buttonsFor(s),buttonsFor(advance(s,13000)));assert.notDeepEqual(buttonsFor(s),buttonsFor(action(s,{type:'workflow',id:taskFor(s).id})));const other=createActivation('other');assert.notDeepEqual(buttonsFor(s),buttonsFor(action(other,{type:'imei',value:other.imei})));

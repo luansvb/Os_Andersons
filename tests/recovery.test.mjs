@@ -33,7 +33,7 @@ test('Rota é contínua, cíclica e cabe nas ruas; a contagem prepara a direçã
 });
 test('Viatura obedece a quatro direções absolutas, freia sem ré e mantém colisões',()=>{
  for(const angle of [0,Math.PI/2,Math.PI,-Math.PI/2])for(const [x,y]of [[0,-1],[0,1],[-1,0],[1,0]]){
-  const s={...chase(),patrol:{x:1100,y:730,angle,speed:-50}},n=advance(s,{x,y},.05);assert.equal(Math.sign(n.patrol.x-s.patrol.x),x);assert.equal(Math.sign(n.patrol.y-s.patrol.y),y);assert.equal(n.patrol.angle,Math.atan2(y,x));
+  const s={...chase(),patrol:{x:1000,y:730,angle,speed:-50}},n=advance(s,{x,y},.05);assert.equal(Math.sign(n.patrol.x-s.patrol.x),x);assert.equal(Math.sign(n.patrol.y-s.patrol.y),y);assert.equal(n.patrol.angle,Math.atan2(y,x));
  }
  let s=chase();s=tick(s,1,{x:1});assert.equal(s.patrol.speed,180);const before={...s.patrol};s=advance(s,{brake:true,x:1},.05);assert.equal(s.patrol.speed,0);assert.equal(s.patrol.x,before.x);assert.equal(s.patrol.y,before.y);s=advance(s,{x:1,boost:true},.05);assert.equal(s.patrol.speed,310);s=advance(s,{},.05);assert.equal(s.patrol.speed,0);
  s={...chase(),patrol:{x:400,y:940,angle:0,speed:200}};s=advance(s,{x:1},.05);assert.equal(s.patrol.speed,0);assert.equal(s.patrol.x,400);assert.ok(s.collisionTime>0);

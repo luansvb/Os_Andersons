@@ -5,11 +5,11 @@ import {resolve} from 'node:path';
 export const PHONE_WIDTH=390;
 export const PHONE_QUERY='(min-width:761px) and (pointer:coarse) and (hover:none) and (max-aspect-ratio:2/3)';
 export const PHONE_STYLES={
- main:['styles.css','credits.css'],
- lt32:['lt32.css'],
- activation:['activation.css'],
- heist:['heist.css','screen-driving.css'],
- recovery:['recovery.css','screen-driving.css','credits.css']
+ main:['styles.css','credits.css','shift.css'],
+ lt32:['lt32.css','shift.css'],
+ activation:['activation.css','shift.css'],
+ heist:['heist.css','screen-driving.css','shift.css'],
+ recovery:['recovery.css','screen-driving.css','credits.css','shift.css']
 };
 
 // Some mobile browsers request a desktop viewport. Keep the same phone layout
