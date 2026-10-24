@@ -32,3 +32,20 @@
 .activation-solo-link{display:block;background:none;border:1px solid #5c6550;color:#d7d8b7;font-size:11px;margin:12px 0 0;padding:10px 14px;border-radius:5px;min-height:40px;max-width:350px;width:100%;text-align:left}.activation-solo-link:hover{border-color:var(--yellow);color:var(--yellow)}.menu-bottom .act-number{font-size:31px}@media(max-width:760px){.activation-solo-link{margin:12px auto 0;text-align:center;font-size:11px}.menu-bottom .act-number{font-size:22px}.menu-bottom .act-preview strong{font-size:8px}}
 
 .heist-solo-link{border-color:#977b56;color:#e4c78c;background:#3a352a}.heist-solo-link:hover{background:#49402e}.menu-bottom .act-preview strong{font-size:10px}@media(max-width:760px){.menu-bottom .act-preview strong{font-size:8px}}
+
+/* Phone reading and touch targets. Keep the current conversation compact. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:760px){
+ .topbar{height:58px}.game-main{padding-top:16px}.chapter-strip{gap:12px;margin-bottom:16px;padding-bottom:14px}
+ .scene-heading h2{font-size:28px}.scene-heading p{display:none;font-size:14px}.scene-heading{margin-bottom:16px}.scene-tag{display:none}
+ .chat-messages{min-height:130px;max-height:210px;padding:12px 14px;gap:10px}.chat-header{padding:11px 14px}.chat-input,.chat-date,.chat-security{display:none}
+ .bubble{font-size:14px;line-height:1.6;padding:10px 12px;max-width:96%}.bubble-name{font-size:11px}.chat-security{font-size:9px}
+ .cat-advice{margin-bottom:12px}.cat-advice p{font-size:22px}.cat-advice small{font-size:10px}
+ .decision-heading strong{font-size:14px}.decision-heading{font-size:12px}
+ .choice{font-size:15px;line-height:1.55;min-height:56px;padding:14px 12px;gap:10px;color:var(--ink)}
+ .choice-number{font-size:12px;width:25px;min-width:25px;height:25px}.choices{gap:10px}
+ .desk-tab{min-height:48px;font-size:13px}.form-body input{font-size:16px;min-height:48px}.field-input-row .btn{min-height:48px}
+ .date-option small,.date-option span{font-size:12px}.time-option{min-height:48px;font-size:15px}
+ .activation-solo-link,.free-workshop-button{font-size:14px;min-height:48px}.practice-link,.release-credits-link{font-size:12px;min-height:44px}
+ .modal p,.cat-modal p{font-size:14px}.modal .btn{min-height:48px;font-size:14px}
+}

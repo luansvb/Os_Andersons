@@ -1,10 +1,10 @@
 # OS ANDERSONS — INSTALANDO E ROUBANDO
 
-🎮 **[Jogar on-line no PC ou celular](https://os-andersons.jolly-spool-1571.chatgpt.site)**
+🎮 **[Jogar on-line no PC ou celular](https://luansvb.github.io/Os_Andersons/)**
 
 Código-fonte do jogo completo, com os cinco atos, imagens, testes e oficina 3D de prática.
 
-Versão 1.0.1. Campanha individual completa de navegador. Ato 1: Agendamento. Ato 2: Instalação 2D do LT-32 PRO. Ato 3: Testes e ativação com Cat e Bear. Ato 4: O grande roubo, com Anderson, o ladrão. Ato 5: Atuação anti furto com Rô, atendimento, rastreamento e perseguição final. O simulador LCV5 continua disponível separadamente para prática em 3D.
+Versão 1.0.2. Campanha individual completa de navegador. Ato 1: Agendamento. Ato 2: Instalação 2D do LT-32 PRO. Ato 3: Testes e ativação com Cat e Bear. Ato 4: O grande roubo, com Anderson, o ladrão. Ato 5: Atuação anti furto com Rô, atendimento, rastreamento e perseguição final. O simulador LCV5 continua disponível separadamente para prática em 3D.
 
 ## Executar e validar
 
@@ -15,7 +15,7 @@ npm test
 python3 -m http.server 8080 --directory dist
 ```
 
-Abra `http://localhost:8080`. `dist/` é a raiz estática para publicação. Não é necessário servidor de partidas, cadastro ou banco de dados. A campanha 2D usa HTML, CSS, SVG e Canvas 2D, sem WebGL. O build empacota apenas a oficina 3D preservada, incluindo engine e fotografias locais. Fontes usam Google Fonts com fallbacks do sistema.
+Abra `http://localhost:8080`. `dist/` é a raiz estática para publicação. Não é necessário servidor de partidas, cadastro ou banco de dados. A campanha 2D usa HTML, CSS, SVG e Canvas 2D, sem WebGL. O build atualiza os estilos de compatibilidade para celular e empacota a oficina 3D preservada, incluindo engine e fotografias locais. Fontes usam Google Fonts com fallbacks do sistema.
 
 ## Fluxo da campanha
 
@@ -133,3 +133,16 @@ Nos atos 4 e 5, as setas e WASD movem o carro na direção da tela: ↑/W sobe, 
 O controle é compartilhado pelos dois atos. Diagonais não ficam mais rápidas, entradas opostas se anulam e os toques são processados pelo relógio normal, sem acelerar artificialmente o prazo da missão. No navegador foram verificadas as quatro setas no Ka e WASD na viatura. Também foram conferidos os toques para cima, baixo e esquerda em 390 pixels. Testes verificam as quatro direções com diferentes orientações iniciais, diagonais, parada, freio, Turbo, colisões e uma perseguição vencida desde a largada com os novos controles.
 
 Detalhes em `docs/controles-direcao.md`.
+
+
+## Celular e GitHub Pages — versão 1.0.2
+
+O atendimento fica em uma coluna, com respostas em 15 px, botões de pelo menos 56 px e a conversa compacta. Foram retirados elementos decorativos da conversa no celular para deixar a mensagem do cliente e as respostas mais próximas. Os campos usam 16 px para facilitar o preenchimento.
+
+Os arquivos `dist/phone-*.css` são gerados por `npm run build:mobile` a partir dos estilos de cada ato. Eles preservam o layout de celular quando um navegador de toque em retrato usa um viewport largo e reduz a página inteira. Essa compatibilidade só entra em telas largas, sem hover, com ponteiro de toque e proporção vertical; o desktop continua usando os estilos normais. As câmeras dos atos 4 e 5 usam a largura visual correspondente ao layout do celular.
+
+Publicação: GitHub Pages usa a branch `gh-pages`, pasta `/ (root)`. O conteúdo de `dist/` é publicado na raiz dessa branch, com `.nojekyll`. A branch `main` guarda os fontes e os arquivos finais. Ao atualizar o jogo, atualize também a branch de publicação.
+
+Validação: 76 testes automatizados aprovados; atendimento e avanço para o mapa conferidos no navegador em 390 px; interfaces dos atos 4 e 5 conferidas em 360 px sem rolagem horizontal; layout largo de 980 px reduzido para 390 px conferido com a regra de compatibilidade ativada em uma página temporária de QA. Essa simulação não substitui um teste em um aparelho físico.
+
+Prévia do layout: [celular-v1-0-2.jpg](docs/celular-v1-0-2.jpg).
