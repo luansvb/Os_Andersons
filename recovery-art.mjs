@@ -1,3 +1,4 @@
+import {designWidth} from './phone-layout.mjs?v=1.0.2';
 import {WORLD,BUILDINGS} from './heist-core.mjs';
 import {makeCity,carSprite} from './heist-art.mjs';
 import {ROUTE,proximity} from './recovery-core.mjs';
@@ -8,7 +9,7 @@ export function mapMarkup(id='tracking-map'){
 export function updateMap(root,s){for(const map of root.querySelectorAll('.tracking-svg')){map.querySelector('.map-target')?.setAttribute('transform',`translate(${s.target.x} ${s.target.y})`);map.querySelector('.target-heading')?.setAttribute('transform',`rotate(${s.target.angle*180/Math.PI+90})`);const patrol=map.querySelector('.map-patrol');if(patrol){patrol.style.display=s.patrol?'':'none';if(s.patrol)patrol.setAttribute('transform',`translate(${s.patrol.x} ${s.patrol.y}) rotate(${s.patrol.angle*180/Math.PI+90})`);}}}
 export function drawChase(canvas,city,s,prefs={}){
  const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;const dpr=Math.min(devicePixelRatio||1,2),pw=Math.round(rect.width*dpr),ph=Math.round(rect.height*dpr);if(canvas.width!==pw||canvas.height!==ph){canvas.width=pw;canvas.height=ph;}
- const c=canvas.getContext('2d'),w=rect.width<600?650:1000,h=w*rect.height/rect.width,p=s.patrol||s.target,focus={x:p.x+Math.cos(p.angle)*80,y:p.y+Math.sin(p.angle)*80},camera={x:Math.max(0,Math.min(WORLD.width-w,focus.x-w/2)),y:Math.max(-50,Math.min(WORLD.height-h+50,focus.y-h*.55))},scale=rect.width/w;
+ const c=canvas.getContext('2d'),w=designWidth(canvas)<600?650:1000,h=w*rect.height/rect.width,p=s.patrol||s.target,focus={x:p.x+Math.cos(p.angle)*80,y:p.y+Math.sin(p.angle)*80},camera={x:Math.max(0,Math.min(WORLD.width-w,focus.x-w/2)),y:Math.max(-50,Math.min(WORLD.height-h+50,focus.y-h*.55))},scale=rect.width/w;
  c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle='#142a31';c.fillRect(0,0,rect.width,rect.height);c.scale(scale,scale);c.translate(-camera.x,-camera.y);c.drawImage(city,0,0);
  // Uma trilha curta ajuda a ler a direção, sem dirigir pelo jogador.
  c.strokeStyle='#8dd4dd70';c.lineWidth=3;c.setLineDash([7,11]);c.beginPath();c.moveTo(s.target.x-Math.cos(s.target.angle)*100,s.target.y-Math.sin(s.target.angle)*100);c.lineTo(s.target.x,s.target.y);c.stroke();c.setLineDash([]);

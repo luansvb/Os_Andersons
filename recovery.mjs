@@ -1,8 +1,8 @@
 import {sampleScreenControls,tapMotion,screenPadMarkup,SCREEN_KEYS} from './screen-driving.mjs';
-import {creditsMarkup} from './credits.mjs';
+import {creditsMarkup} from './credits.mjs?v=1.0.2';
 import {createRecovery,restoreRecovery,applyRecoveryAction,advanceRecovery,proximity,canBlock,roGuidance,positionText,locationFresh,ANSWERS,REPORT,RULES,RO_LECTURE} from './recovery-core.mjs?v=1.0.1';
 import {LEGAL_SOURCES} from './ro-lecture.mjs';
-import {makeCity,mapMarkup,updateMap,drawChase} from './recovery-art.mjs';
+import {makeCity,mapMarkup,updateMap,drawChase} from './recovery-art.mjs?v=1.0.2';
 const app=document.querySelector('#recovery-app'),modal=document.querySelector('#recovery-modal'),$=q=>document.querySelector(q),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let tap=null,turbo=false;
 let state=null,context=null,city=null,canvas=null,timer=0,last=0,lastHud=0,lastSave=0,keys=new Map(),pads=new Map(),helpOpen=false,paused=false,reportedFailure=false,toastTimer=0,focusBefore=null,lastGuide='';
